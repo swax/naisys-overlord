@@ -1,9 +1,13 @@
+import dotenv from 'dotenv'
 import Fastify from 'fastify'
 import cors from '@fastify/cors'
 import staticFiles from '@fastify/static'
+import cookie from '@fastify/cookie'
 import path from 'path'
 import { fileURLToPath } from 'url'
 import apiRoutes from './routes/api.js'
+
+dotenv.config()
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -17,6 +21,8 @@ const fastify = Fastify({
 await fastify.register(cors, {
   origin: process.env.NODE_ENV === 'production' ? false : ['http://localhost:5173']
 })
+
+await fastify.register(cookie)
 
 fastify.register(apiRoutes, { prefix: '/api' })
 

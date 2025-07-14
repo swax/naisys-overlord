@@ -1,20 +1,23 @@
 import { FastifyInstance, FastifyPluginOptions } from 'fastify'
-
-interface HelloResponse {
-  message: string
-  timestamp: string
-  success: boolean
-}
+import { HelloResponse } from 'shared'
+import accessRoutes from './access.js'
+import settingsRoutes from './settings.js'
 
 export default async function apiRoutes(
   fastify: FastifyInstance, 
-  options: FastifyPluginOptions
+  _options: FastifyPluginOptions
 ) {
-  fastify.get<{ Reply: HelloResponse }>('/hello', async (request, reply) => {
+  fastify.get<{ Reply: HelloResponse }>('/hello', async (_request, _reply) => {
     return { 
       message: 'Hello from Fastify with TypeScript!', 
       timestamp: new Date().toISOString(),
       success: true 
     }
   })
+
+  // Register access routes
+  await fastify.register(accessRoutes)
+  
+  // Register settings routes
+  await fastify.register(settingsRoutes)
 }
