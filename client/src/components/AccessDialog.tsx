@@ -1,85 +1,95 @@
-import React from 'react'
-import { Modal, Stack, Alert, Text, TextInput, Group, Button } from '@mantine/core'
+import React from "react";
+import {
+  Modal,
+  Stack,
+  Alert,
+  Text,
+  TextInput,
+  Group,
+  Button,
+} from "@mantine/core";
 
 interface AccessDialogProps {
-  opened: boolean
-  onClose: () => void
-  isAuthenticated: boolean
-  onAuthenticationChange: (authenticated: boolean) => void
+  opened: boolean;
+  onClose: () => void;
+  isAuthenticated: boolean;
+  onAuthenticationChange: (authenticated: boolean) => void;
 }
 
-export const AccessDialog: React.FC<AccessDialogProps> = ({ 
-  opened, 
-  onClose, 
-  isAuthenticated, 
-  onAuthenticationChange 
+export const AccessDialog: React.FC<AccessDialogProps> = ({
+  opened,
+  onClose,
+  isAuthenticated,
+  onAuthenticationChange,
 }) => {
-  const [accessKey, setAccessKey] = React.useState('')
-  const [isLoading, setIsLoading] = React.useState(false)
-  const [errorMessage, setErrorMessage] = React.useState('')
+  const [accessKey, setAccessKey] = React.useState("");
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [errorMessage, setErrorMessage] = React.useState("");
 
   const handleSubmitAccessKey = async () => {
     if (!accessKey.trim()) {
-      setErrorMessage('Please enter an access key')
-      return
+      setErrorMessage("Please enter an access key");
+      return;
     }
 
-    setIsLoading(true)
-    setErrorMessage('')
+    setIsLoading(true);
+    setErrorMessage("");
 
     try {
-      const response = await fetch('/api/access-key', {
-        method: 'POST',
+      const response = await fetch("/api/access-key", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ accessKey }),
-      })
-      
-      const result = await response.json()
-      
+      });
+
+      const result = await response.json();
+
       if (response.ok && result.success) {
-        onAuthenticationChange(true)
-        onClose()
-        setAccessKey('')
-        setErrorMessage('')
+        onAuthenticationChange(true);
+        onClose();
+        setAccessKey("");
+        setErrorMessage("");
       } else {
-        setErrorMessage(result.message || 'Access key incorrect')
+        setErrorMessage(result.message || "Access key incorrect");
       }
     } catch (error) {
-      setErrorMessage(error instanceof Error ? error.message : 'An error occurred')
+      setErrorMessage(
+        error instanceof Error ? error.message : "An error occurred",
+      );
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleLogout = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await fetch('/api/logout', {
-        method: 'POST',
+      await fetch("/api/logout", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({}),
-      })
-      onAuthenticationChange(false)
-      onClose()
+      });
+      onAuthenticationChange(false);
+      onClose();
     } catch (error) {
-      console.error('Logout failed:', error)
+      console.error("Logout failed:", error);
       // Still clear authentication on client side even if server call fails
-      onAuthenticationChange(false)
-      onClose()
+      onAuthenticationChange(false);
+      onClose();
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleClose = () => {
-    onClose()
-    setErrorMessage('')
-    setAccessKey('')
-  }
+    onClose();
+    setErrorMessage("");
+    setAccessKey("");
+  };
 
   if (isAuthenticated) {
     return (
@@ -94,24 +104,16 @@ export const AccessDialog: React.FC<AccessDialogProps> = ({
             Are you sure you want to logout? This will end your current session.
           </Text>
           <Group justify="flex-end" gap="xs">
-            <Button 
-              variant="light" 
-              onClick={handleClose}
-              disabled={isLoading}
-            >
+            <Button variant="light" onClick={handleClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button 
-              color="red"
-              onClick={handleLogout}
-              loading={isLoading}
-            >
+            <Button color="red" onClick={handleLogout} loading={isLoading}>
               Logout
             </Button>
           </Group>
         </Stack>
       </Modal>
-    )
+    );
   }
 
   return (
@@ -133,22 +135,18 @@ export const AccessDialog: React.FC<AccessDialogProps> = ({
           value={accessKey}
           onChange={(event) => setAccessKey(event.currentTarget.value)}
           onKeyDown={(event) => {
-            if (event.key === 'Enter') {
-              handleSubmitAccessKey()
+            if (event.key === "Enter") {
+              handleSubmitAccessKey();
             }
           }}
           data-autofocus
           disabled={isLoading}
         />
         <Group justify="flex-end" gap="xs">
-          <Button 
-            variant="light" 
-            onClick={handleClose}
-            disabled={isLoading}
-          >
+          <Button variant="light" onClick={handleClose} disabled={isLoading}>
             Cancel
           </Button>
-          <Button 
+          <Button
             onClick={handleSubmitAccessKey}
             loading={isLoading}
             disabled={!accessKey.trim()}
@@ -158,5 +156,5 @@ export const AccessDialog: React.FC<AccessDialogProps> = ({
         </Group>
       </Stack>
     </Modal>
-  )
-}
+  );
+};

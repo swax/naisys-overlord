@@ -1,61 +1,67 @@
-import React, { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { Text, Stack, Card, Badge, Group } from '@mantine/core'
-import { IconRobot } from '@tabler/icons-react'
-import { Agent } from 'shared'
-import { getAgents } from '../lib/api'
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Text, Stack, Card, Badge, Group } from "@mantine/core";
+import { IconRobot } from "@tabler/icons-react";
+import { Agent } from "shared";
+import { getAgents } from "../lib/api";
 
 export const AgentSidebar: React.FC = () => {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const [agents, setAgents] = useState<Agent[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [agents, setAgents] = useState<Agent[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchAgents = async () => {
     try {
-      const response = await getAgents()
+      const response = await getAgents();
       if (response.success && response.agents) {
-        setAgents(response.agents)
+        setAgents(response.agents);
       }
     } catch (error) {
-      console.error('Error fetching agents:', error)
+      console.error("Error fetching agents:", error);
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchAgents()
-    const interval = setInterval(fetchAgents, 5000)
-    return () => clearInterval(interval)
-  }, [])
+    fetchAgents();
+    const interval = setInterval(fetchAgents, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const isAgentSelected = (agentName: string) => {
-    const pathParts = location.pathname.split('/')
-    if (agentName.toLowerCase() === 'all') {
-      return !pathParts[2]
+    const pathParts = location.pathname.split("/");
+    if (agentName.toLowerCase() === "all") {
+      return !pathParts[2];
     }
-    return pathParts[2]?.toLowerCase() === agentName.toLowerCase()
-  }
+    return pathParts[2]?.toLowerCase() === agentName.toLowerCase();
+  };
 
-  const getCurrentSection = () => location.pathname.split('/')[1]
+  const getCurrentSection = () => location.pathname.split("/")[1];
 
   const handleAgentClick = (agent: Agent) => {
-    const currentSection = getCurrentSection()
-    if (agent.name.toLowerCase() === 'all') {
-      if (currentSection && ['log', 'mail', 'controls'].includes(currentSection)) {
-        navigate(`/${currentSection}`)
+    const currentSection = getCurrentSection();
+    if (agent.name.toLowerCase() === "all") {
+      if (
+        currentSection &&
+        ["log", "mail", "controls"].includes(currentSection)
+      ) {
+        navigate(`/${currentSection}`);
       } else {
-        navigate('/controls')
+        navigate("/controls");
       }
     } else {
-      if (currentSection && ['log', 'mail', 'controls'].includes(currentSection)) {
-        navigate(`/${currentSection}/${agent.name.toLowerCase()}`)
+      if (
+        currentSection &&
+        ["log", "mail", "controls"].includes(currentSection)
+      ) {
+        navigate(`/${currentSection}/${agent.name.toLowerCase()}`);
       } else {
-        navigate(`/controls/${agent.name.toLowerCase()}`)
+        navigate(`/controls/${agent.name.toLowerCase()}`);
       }
     }
-  }
+  };
 
   if (isLoading) {
     return (
@@ -63,9 +69,11 @@ export const AgentSidebar: React.FC = () => {
         <Text size="sm" fw={600} mb="md" c="dimmed">
           AGENTS
         </Text>
-        <Text size="sm" c="dimmed">Loading agents...</Text>
+        <Text size="sm" c="dimmed">
+          Loading agents...
+        </Text>
       </>
-    )
+    );
   }
 
   return (
@@ -75,15 +83,17 @@ export const AgentSidebar: React.FC = () => {
       </Text>
       <Stack gap="xs">
         {agents.map((agent, index) => (
-          <Card 
-            key={index} 
-            padding="sm" 
-            radius="md" 
+          <Card
+            key={index}
+            padding="sm"
+            radius="md"
             withBorder
-            style={{ 
-              cursor: 'pointer',
-              backgroundColor: isAgentSelected(agent.name) ? 'var(--mantine-color-blue-9)' : undefined,
-              opacity: agent.name === 'All' ? 1 : (agent.online ? 1 : 0.5)
+            style={{
+              cursor: "pointer",
+              backgroundColor: isAgentSelected(agent.name)
+                ? "var(--mantine-color-blue-9)"
+                : undefined,
+              opacity: agent.name === "All" ? 1 : agent.online ? 1 : 0.5,
             }}
             onClick={() => handleAgentClick(agent)}
           >
@@ -99,13 +109,13 @@ export const AgentSidebar: React.FC = () => {
                   {agent.title}
                 </Text>
               </div>
-              {agent.name !== 'All' && (
+              {agent.name !== "All" && (
                 <Badge
                   size="xs"
                   variant="light"
-                  color={agent.online ? 'green' : 'gray'}
+                  color={agent.online ? "green" : "gray"}
                 >
-                  {agent.online ? 'online' : 'offline'}
+                  {agent.online ? "online" : "offline"}
                 </Badge>
               )}
             </Group>
@@ -113,5 +123,5 @@ export const AgentSidebar: React.FC = () => {
         ))}
       </Stack>
     </>
-  )
-}
+  );
+};

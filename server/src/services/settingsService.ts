@@ -8,14 +8,17 @@ export interface SettingsRecord {
 }
 
 export async function saveSettings(settings: Settings): Promise<void> {
-  if (!settings || !Array.isArray(settings.naisysDataFolderPaths)) {
+  if (!settings || typeof settings.naisysDataFolderPath !== "string") {
     throw new Error("Invalid settings format");
   }
 
-  return await runOverlordDbCommand<void>(`
+  return await runOverlordDbCommand<void>(
+    `
     INSERT OR REPLACE INTO settings (id, settings_json, modify_date)
     VALUES (1, ?, ?)
-  `, [JSON.stringify(settings), new Date().toISOString()]);
+  `,
+    [JSON.stringify(settings), new Date().toISOString()],
+  );
 }
 
 export async function getSettings(): Promise<Settings | null> {

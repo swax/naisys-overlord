@@ -5,12 +5,14 @@ A modern full-stack application using Node.js/Fastify for the backend and React/
 ## Tech Stack
 
 ### Backend
+
 - **Node.js** with **TypeScript**
 - **Fastify** web framework
 - **CORS** support
 - Hot reload during development
 
 ### Frontend
+
 - **React 18** with **TypeScript**
 - **Vite** build tool
 - **React Router** for routing
@@ -40,10 +42,12 @@ A modern full-stack application using Node.js/Fastify for the backend and React/
 ## Development
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm
 
 ### Setup
+
 ```bash
 # Install all dependencies
 npm run install:all
@@ -53,34 +57,39 @@ npm run dev
 ```
 
 This will start:
+
 - Backend server on http://localhost:3001
 - Frontend dev server on http://localhost:5173
 - Frontend proxies `/api/*` requests to backend
 
 ### Individual Development
+
 ```bash
 # Backend only
 npm run dev --workspace=server
 
-# Frontend only  
+# Frontend only
 npm run dev --workspace=client
 ```
 
 ## Production
 
 ### Build
+
 ```bash
 # Build both frontend and backend
 npm run build
 ```
 
 ### Deploy
+
 ```bash
 # Start production server (serves both API and built React app)
 npm start
 ```
 
 The production server:
+
 - Serves the React app as static files
 - Handles API routes under `/api/*`
 - Runs on a single port (default: 3001)

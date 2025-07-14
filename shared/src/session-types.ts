@@ -1,22 +1,22 @@
 export interface AccessKeyRequest {
-  accessKey: string
+  accessKey: string;
 }
 
 export interface AccessKeyResponse {
-  success: boolean
-  message: string
-  token?: string
+  success: boolean;
+  message: string;
+  token?: string;
 }
 
 export interface SessionResponse {
-  success: boolean
-  username?: string
-  startDate?: string
-  expireDate?: string
-  message?: string
+  success: boolean;
+  username?: string;
+  startDate?: string;
+  expireDate?: string;
+  message?: string;
 }
 
 export interface LogoutResponse {
-  success: boolean
-  message: string
+  success: boolean;
+  message: string;
 }

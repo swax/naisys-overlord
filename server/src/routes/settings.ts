@@ -33,7 +33,7 @@ export default async function settingsRoutes(
             success: true,
             message: "Default settings returned",
             settings: {
-              naisysDataFolderPaths: [],
+              naisysDataFolderPath: "",
             },
           };
         }
@@ -59,10 +59,10 @@ export default async function settingsRoutes(
       }
 
       try {
-        const settings = request.body;
+        const settings = request.body.settings;
 
         // Validate the input
-        if (!Array.isArray(settings.naisysDataFolderPaths)) {
+        if (typeof settings.naisysDataFolderPath !== "string") {
           reply.code(400);
           return {
             success: false,
@@ -76,7 +76,7 @@ export default async function settingsRoutes(
         return {
           success: true,
           message: "Settings saved successfully",
-          settings: request.body,
+          settings,
         };
       } catch (error) {
         reply.code(500);

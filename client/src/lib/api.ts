@@ -1,114 +1,128 @@
-import type { 
-  HelloResponse, 
-  AccessKeyRequest, 
-  AccessKeyResponse, 
-  SettingsRequest, 
+import type {
+  HelloResponse,
+  AccessKeyRequest,
+  AccessKeyResponse,
+  SettingsRequest,
   SettingsResponse,
-  AgentsResponse 
-} from 'shared'
+  AgentsResponse,
+} from "shared";
 
-const API_BASE = '/api'
+const API_BASE = "/api";
 
 export interface SessionResponse {
-  success: boolean
-  username?: string
-  startDate?: string
-  expireDate?: string
-  message?: string
+  success: boolean;
+  username?: string;
+  startDate?: string;
+  expireDate?: string;
+  message?: string;
 }
 
 export interface LogoutResponse {
-  success: boolean
-  message: string
+  success: boolean;
+  message: string;
 }
 
-export type { HelloResponse, AccessKeyRequest, AccessKeyResponse, SettingsRequest, SettingsResponse, AgentsResponse }
+export type {
+  HelloResponse,
+  AccessKeyRequest,
+  AccessKeyResponse,
+  SettingsRequest,
+  SettingsResponse,
+  AgentsResponse,
+};
 
 export const api = {
   async get<T>(endpoint: string): Promise<T> {
-    const response = await fetch(`${API_BASE}${endpoint}`)
+    const response = await fetch(`${API_BASE}${endpoint}`);
     if (!response.ok) {
-      throw new Error(`API Error: ${response.status}`)
+      throw new Error(`API Error: ${response.status}`);
     }
-    return response.json()
+    return response.json();
   },
 
   async post<T, R>(endpoint: string, data: T): Promise<R> {
     const response = await fetch(`${API_BASE}${endpoint}`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(data),
-    })
-    const result = await response.json()
+    });
+    const result = await response.json();
     if (!response.ok) {
-      throw new Error(result.message || `API Error: ${response.status}`)
+      throw new Error(result.message || `API Error: ${response.status}`);
     }
-    return result
-  }
-}
+    return result;
+  },
+};
 
 export const apiEndpoints = {
-  hello: '/hello',
-  accessKey: '/access-key',
-  session: '/session',
-  logout: '/logout',
-  settings: '/settings',
-  agents: '/agents'
-}
+  hello: "/hello",
+  accessKey: "/access-key",
+  session: "/session",
+  logout: "/logout",
+  settings: "/settings",
+  agents: "/agents",
+};
 
 export const checkSession = async (): Promise<SessionResponse> => {
   try {
-    return await api.get<SessionResponse>(apiEndpoints.session)
+    return await api.get<SessionResponse>(apiEndpoints.session);
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Session check failed'
-    }
+      message: error instanceof Error ? error.message : "Session check failed",
+    };
   }
-}
+};
 
 export const logout = async (): Promise<LogoutResponse> => {
   try {
-    return await api.post<{}, LogoutResponse>(apiEndpoints.logout, {})
+    return await api.post<{}, LogoutResponse>(apiEndpoints.logout, {});
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Logout failed'
-    }
+      message: error instanceof Error ? error.message : "Logout failed",
+    };
   }
-}
+};
 
 export const getSettings = async (): Promise<SettingsResponse> => {
   try {
-    return await api.get<SettingsResponse>(apiEndpoints.settings)
+    return await api.get<SettingsResponse>(apiEndpoints.settings);
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to load settings'
-    }
+      message:
+        error instanceof Error ? error.message : "Failed to load settings",
+    };
   }
-}
+};
 
-export const saveSettings = async (settings: SettingsRequest): Promise<SettingsResponse> => {
+export const saveSettings = async (
+  settings: SettingsRequest,
+): Promise<SettingsResponse> => {
   try {
-    return await api.post<SettingsRequest, SettingsResponse>(apiEndpoints.settings, settings)
+    return await api.post<SettingsRequest, SettingsResponse>(
+      apiEndpoints.settings,
+      settings,
+    );
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to save settings'
-    }
+      message:
+        error instanceof Error ? error.message : "Failed to save settings",
+    };
   }
-}
+};
 
 export const getAgents = async (): Promise<AgentsResponse> => {
   try {
-    return await api.get<AgentsResponse>(apiEndpoints.agents)
+    return await api.get<AgentsResponse>(apiEndpoints.agents);
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : 'Failed to load agents'
-    }
+      message: error instanceof Error ? error.message : "Failed to load agents",
+    };
   }
-}
+};

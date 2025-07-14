@@ -11,12 +11,15 @@ export async function runNaisysDbCommand<T>(
 ): Promise<T> {
   const settings = await getSettings();
 
-  const naisysFolderPath = settings ? settings.naisysDataFolderPaths[0] : "";
-  if (!naisysFolderPath) {
+  if (!settings?.naisysDataFolderPath) {
     throw new Error("Naisys data folder path is not set in settings.");
   }
 
-  const naisysDbPath = path.join(naisysFolderPath, "database", "naisys.sqlite");
+  const naisysDbPath = path.join(
+    settings.naisysDataFolderPath,
+    "database",
+    "naisys.sqlite",
+  );
 
   const dbExists = fs.existsSync(naisysDbPath);
   if (!dbExists) {

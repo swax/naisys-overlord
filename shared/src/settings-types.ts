@@ -1,13 +1,13 @@
 export interface Settings {
-  naisysDataFolderPaths: string[]
+  naisysDataFolderPath: string;
 }
 
 export interface SettingsRequest {
-  naisysDataFolderPaths: string[]
+  settings: Settings;
 }
 
 export interface SettingsResponse {
-  success: boolean
-  message: string
-  settings?: Settings
+  success: boolean;
+  message: string;
+  settings?: Settings;
 }
