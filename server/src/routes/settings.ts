@@ -1,7 +1,7 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { getSettings, saveSettings } from "../services/settingsService.js";
 import { validateSession } from "./access.js";
-import { SettingsRequest, SettingsResponse } from "shared";
+import { SettingsRequest, SettingsResponse, SettingsSchema } from "shared";
 
 export default async function settingsRoutes(
   fastify: FastifyInstance,
@@ -59,24 +59,24 @@ export default async function settingsRoutes(
       }
 
       try {
-        const settings = request.body.settings;
-
-        // Validate the input
-        if (typeof settings.naisysDataFolderPath !== "string") {
+        // Validate the input with Zod
+        const settings = SettingsSchema.safeParse(request.body.settings);
+        
+        if (!settings.success) {
           reply.code(400);
           return {
             success: false,
-            message: "Invalid settings format",
+            message: `Invalid settings format: ${settings.error.message}`,
           };
         }
 
-        // Save settings as JSON
-        await saveSettings(settings);
+        // Save settings as JSON (use validated data)
+        await saveSettings(settings.data);
 
         return {
           success: true,
           message: "Settings saved successfully",
-          settings,
+          settings: settings.data,
         };
       } catch (error) {
         reply.code(500);

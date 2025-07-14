@@ -18,7 +18,8 @@
     "fastify": "^5.4.0",
     "shared": "file:../shared",
     "sqlite3": "^5.1.7",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "zod": "^4.0.5"
   },
   "devDependencies": {
     "@types/node": "^20.14.12",
