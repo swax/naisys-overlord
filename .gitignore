@@ -1,5 +1,6 @@
-node_modules/
 client/dist/
+node_modules/
 server/dist/
-shared/dist/
 server/.env
+server/overlord.db
+shared/dist/

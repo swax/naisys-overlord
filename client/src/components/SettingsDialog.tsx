@@ -90,10 +90,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ opened, onClose 
 
         <div>
           <Text size="sm" fw={500} mb="xs">
-            NAISYS Data Folder Paths
+            NAISYS_FOLDER(s)
           </Text>
           <Text size="xs" c="dimmed" mb="sm">
-            Enter one folder path per line. These paths will be monitored by the NAISYS system.
+            Enter one folder path per line. These paths will be monitored by Overlord.
           </Text>
           <Textarea
             value={paths}

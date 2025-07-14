@@ -3,7 +3,8 @@ import type {
   AccessKeyRequest, 
   AccessKeyResponse, 
   SettingsRequest, 
-  SettingsResponse 
+  SettingsResponse,
+  AgentsResponse 
 } from 'shared'
 
 const API_BASE = '/api'
@@ -21,7 +22,7 @@ export interface LogoutResponse {
   message: string
 }
 
-export type { HelloResponse, AccessKeyRequest, AccessKeyResponse, SettingsRequest, SettingsResponse }
+export type { HelloResponse, AccessKeyRequest, AccessKeyResponse, SettingsRequest, SettingsResponse, AgentsResponse }
 
 export const api = {
   async get<T>(endpoint: string): Promise<T> {
@@ -53,7 +54,8 @@ export const apiEndpoints = {
   accessKey: '/access-key',
   session: '/session',
   logout: '/logout',
-  settings: '/settings'
+  settings: '/settings',
+  agents: '/agents'
 }
 
 export const checkSession = async (): Promise<SessionResponse> => {
@@ -96,6 +98,17 @@ export const saveSettings = async (settings: SettingsRequest): Promise<SettingsR
     return {
       success: false,
       message: error instanceof Error ? error.message : 'Failed to save settings'
+    }
+  }
+}
+
+export const getAgents = async (): Promise<AgentsResponse> => {
+  try {
+    return await api.get<AgentsResponse>(apiEndpoints.agents)
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : 'Failed to load agents'
     }
   }
 }
