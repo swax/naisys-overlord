@@ -1,34 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Text, Stack, Card, Badge, Group } from "@mantine/core";
 import { IconRobot } from "@tabler/icons-react";
 import { Agent } from "shared";
-import { getAgents } from "../lib/api";
+import { useNaisysDataContext } from "../contexts/NaisysDataContext";
 
 export const AgentSidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [agents, setAgents] = useState<Agent[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const fetchAgents = async () => {
-    try {
-      const response = await getAgents();
-      if (response.success && response.agents) {
-        setAgents(response.agents);
-      }
-    } catch (error) {
-      console.error("Error fetching agents:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAgents();
-    const interval = setInterval(fetchAgents, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  const { agents, isLoading } = useNaisysDataContext();
 
   const isAgentSelected = (agentName: string) => {
     const pathParts = location.pathname.split("/");

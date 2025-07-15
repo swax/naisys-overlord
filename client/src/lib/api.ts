@@ -4,7 +4,10 @@ import type {
   AccessKeyResponse,
   SettingsRequest,
   SettingsResponse,
-  AgentsResponse,
+  LogEntry,
+  Agent,
+  NaisysDataResponse,
+  NaisysDataRequest,
 } from "shared";
 
 const API_BASE = "/api";
@@ -28,7 +31,10 @@ export type {
   AccessKeyResponse,
   SettingsRequest,
   SettingsResponse,
-  AgentsResponse,
+  LogEntry,
+  Agent,
+  NaisysDataResponse,
+  NaisysDataRequest,
 };
 
 export const api = {
@@ -62,7 +68,7 @@ export const apiEndpoints = {
   session: "/session",
   logout: "/logout",
   settings: "/settings",
-  agents: "/agents",
+  data: "/data",
 };
 
 export const checkSession = async (): Promise<SessionResponse> => {
@@ -116,13 +122,27 @@ export const saveSettings = async (
   }
 };
 
-export const getAgents = async (): Promise<AgentsResponse> => {
+
+export interface NaisysDataParams {
+  after?: number;
+  limit?: number;
+}
+
+export const getNaisysData = async (params?: NaisysDataParams): Promise<NaisysDataResponse> => {
   try {
-    return await api.get<AgentsResponse>(apiEndpoints.agents);
+    const queryParams = new URLSearchParams();
+    if (params?.after !== undefined) queryParams.append("after", params.after.toString());
+    if (params?.limit) queryParams.append("limit", params.limit.toString());
+    
+    const url = queryParams.toString() 
+      ? `${apiEndpoints.data}?${queryParams.toString()}`
+      : apiEndpoints.data;
+      
+    return await api.get<NaisysDataResponse>(url);
   } catch (error) {
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to load agents",
+      message: error instanceof Error ? error.message : "Failed to load NAISYS data",
     };
   }
 };

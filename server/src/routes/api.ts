@@ -2,7 +2,7 @@ import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { HelloResponse } from "shared";
 import accessRoutes from "./access.js";
 import settingsRoutes from "./settings.js";
-import agentsRoutes from "./agents.js";
+import dataRoutes from "./data.js";
 
 export default async function apiRoutes(
   fastify: FastifyInstance,
@@ -22,6 +22,6 @@ export default async function apiRoutes(
   // Register settings routes
   await fastify.register(settingsRoutes);
 
-  // Register agents routes
-  await fastify.register(agentsRoutes);
+  // Register NAISYS data routes
+  await fastify.register(dataRoutes);
 }

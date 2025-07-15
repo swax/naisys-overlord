@@ -6,8 +6,3 @@ export interface Agent {
   agentPath?: string;
 }
 
-export interface AgentsResponse {
-  success: boolean;
-  message: string;
-  agents?: Agent[];
-}

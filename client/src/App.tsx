@@ -34,6 +34,7 @@ import { Controls } from "./pages/Controls";
 import { SettingsDialog } from "./components/SettingsDialog";
 import { AccessDialog } from "./components/AccessDialog";
 import { AgentSidebar } from "./components/AgentSidebar";
+import { NaisysDataProvider } from "./contexts/NaisysDataContext";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
@@ -253,9 +254,11 @@ const App: React.FC = () => {
     <QueryClientProvider client={queryClient}>
       <MantineProvider defaultColorScheme="dark">
         <Notifications />
-        <Router basename="/overlord">
-          <AppContent />
-        </Router>
+        <NaisysDataProvider>
+          <Router basename="/overlord">
+            <AppContent />
+          </Router>
+        </NaisysDataProvider>
       </MantineProvider>
     </QueryClientProvider>
   );

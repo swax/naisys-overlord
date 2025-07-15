@@ -7,3 +7,5 @@ export interface HelloResponse {
 export * from "./session-types";
 export * from "./settings-types";
 export * from "./agents-types";
+export * from "./log-types";
+export * from "./data-types";
