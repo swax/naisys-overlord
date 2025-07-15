@@ -15,6 +15,7 @@ import {
   Text,
   ActionIcon,
   Flex,
+  Tooltip,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { Notifications } from "@mantine/notifications";
@@ -25,6 +26,8 @@ import {
   IconDeviceGamepad2,
   IconLock,
   IconLockOpen,
+  IconPlugConnected,
+  IconPlugConnectedX,
 } from "@tabler/icons-react";
 import { queryClient } from "./lib/queryClient";
 import { Home } from "./pages/Home";
@@ -34,7 +37,10 @@ import { Controls } from "./pages/Controls";
 import { SettingsDialog } from "./components/SettingsDialog";
 import { AccessDialog } from "./components/AccessDialog";
 import { AgentSidebar } from "./components/AgentSidebar";
-import { NaisysDataProvider } from "./contexts/NaisysDataContext";
+import {
+  NaisysDataProvider,
+  useNaisysDataContext,
+} from "./contexts/NaisysDataContext";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 
@@ -51,6 +57,8 @@ const AppContent: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { isLoading, error } = useNaisysDataContext();
+
 
   const isActive = (path: string) => {
     const currentSection = location.pathname.split("/")[1];
@@ -106,35 +114,58 @@ const AppContent: React.FC = () => {
             </Text>
           </Group>
           <Group gap="xs">
+            <Group gap="xs">
+              <Tooltip
+                label={
+                  error
+                    ? "Disconnected"
+                    : isLoading
+                      ? "Connecting"
+                      : "Connected"
+                }
+              >
+                <ActionIcon
+                  variant={error ? "filled" : isLoading ? "outline" : "filled"}
+                  color={error ? "red" : isLoading ? "yellow" : "green"}
+                  size="lg"
+                >
+                  {error ? (
+                    <IconPlugConnectedX size="1.2rem" />
+                  ) : (
+                    <IconPlugConnected size="1.2rem" />
+                  )}
+                </ActionIcon>
+              </Tooltip>
+            </Group>
             <Group
               gap="xs"
               style={{ cursor: "pointer" }}
               onClick={handleLockIconClick}
             >
-              <ActionIcon
-                variant={isAuthenticated ? "filled" : "subtle"}
-                color={isAuthenticated ? "green" : undefined}
-                size="lg"
-                aria-label={isAuthenticated ? "Authenticated" : "Access Key"}
-              >
-                {isAuthenticated ? (
-                  <IconLockOpen size="1.2rem" />
-                ) : (
-                  <IconLock size="1.2rem" />
-                )}
-              </ActionIcon>
+              <Tooltip label={isAuthenticated ? "Authenticated" : "Read Only"}>
+                <ActionIcon
+                  variant={isAuthenticated ? "filled" : "subtle"}
+                  color={isAuthenticated ? "green" : undefined}
+                  size="lg"
+                >
+                  {isAuthenticated ? (
+                    <IconLockOpen size="1.2rem" />
+                  ) : (
+                    <IconLock size="1.2rem" />
+                  )}
+                </ActionIcon>
+              </Tooltip>
             </Group>
             <Group
               gap="xs"
               style={{ cursor: "pointer" }}
               onClick={openSettingsModal}
             >
-              <ActionIcon variant="subtle" size="lg" aria-label="Settings">
-                <IconSettings size="1.2rem" />
-              </ActionIcon>
-              <Text size="xs" visibleFrom="sm">
-                Settings
-              </Text>
+              <Tooltip label="Settings">
+                <ActionIcon variant="subtle" size="lg">
+                  <IconSettings size="1.2rem" />
+                </ActionIcon>
+              </Tooltip>
             </Group>
           </Group>
         </Group>

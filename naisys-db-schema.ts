@@ -60,8 +60,10 @@ export const createDreamLogTable = `CREATE TABLE DreamLog (
 export const createContextLogTable = `CREATE TABLE ContextLog (
     id INTEGER PRIMARY KEY, 
     username TEXT NOT NULL,
+    role TEXT NOT NULL,
     source TEXT NOT NULL,
     type TEXT NOT NULL,
     message TEXT NOT NULL,
-    date TEXT NOT NULL
+    date TEXT NOT NULL,
+    inputMode TEXT NOT NULL
   )`;

@@ -1,23 +1,26 @@
+import { LogInputMode, LogRole, LogSource, LogType } from "shared";
 import { LogEntry } from "shared/src/log-types.js";
 import { runNaisysDbCommand } from "../database/naisysDatabase.js";
 
 interface NaisysLogEntry {
   id: number;
   username: string;
-  source: string;
-  type: string;
+  role: LogRole;
+  source: LogSource;
+  type: LogType;
   message: string;
   date: string;
+  inputMode: LogInputMode;
 }
 
 export async function getLogs(
   agent?: string,
   after?: number,
-  limit: number = 100
+  limit: number = 100,
 ): Promise<LogEntry[]> {
   try {
     let sql = `
-      SELECT id, username, source, type, message, date
+      SELECT id, username, role, source, type, message, date, inputMode
       FROM ContextLog
     `;
     const params: any[] = [];
@@ -43,13 +46,15 @@ export async function getLogs(
 
     const logs = await runNaisysDbCommand<NaisysLogEntry[]>(sql, params);
 
-    return logs.map(log => ({
+    return logs.map((log) => ({
       id: log.id,
       username: log.username,
+      role: log.role,
       source: log.source,
       type: log.type,
       message: log.message,
-      date: log.date
+      date: log.date,
+      inputMode: log.inputMode,
     }));
   } catch (error) {
     console.error("Error fetching logs from Naisys database:", error);

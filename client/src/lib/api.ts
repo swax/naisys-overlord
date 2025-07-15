@@ -129,20 +129,13 @@ export interface NaisysDataParams {
 }
 
 export const getNaisysData = async (params?: NaisysDataParams): Promise<NaisysDataResponse> => {
-  try {
-    const queryParams = new URLSearchParams();
-    if (params?.after !== undefined) queryParams.append("after", params.after.toString());
-    if (params?.limit) queryParams.append("limit", params.limit.toString());
+  const queryParams = new URLSearchParams();
+  if (params?.after !== undefined) queryParams.append("after", params.after.toString());
+  if (params?.limit) queryParams.append("limit", params.limit.toString());
+  
+  const url = queryParams.toString() 
+    ? `${apiEndpoints.data}?${queryParams.toString()}`
+    : apiEndpoints.data;
     
-    const url = queryParams.toString() 
-      ? `${apiEndpoints.data}?${queryParams.toString()}`
-      : apiEndpoints.data;
-      
-    return await api.get<NaisysDataResponse>(url);
-  } catch (error) {
-    return {
-      success: false,
-      message: error instanceof Error ? error.message : "Failed to load NAISYS data",
-    };
-  }
+  return await api.get<NaisysDataResponse>(url);
 };
