@@ -14,9 +14,8 @@ interface NaisysLogEntry {
 }
 
 export async function getLogs(
-  agent?: string,
   after?: number,
-  limit: number = 100,
+  limit: number = 1000,
 ): Promise<LogEntry[]> {
   try {
     let sql = `
@@ -27,24 +26,22 @@ export async function getLogs(
 
     const conditions: string[] = [];
 
-    if (after !== undefined) {
+    if (after !== undefined && after > 0) {
       conditions.push("id > ?");
       params.push(after);
-    }
-
-    if (agent && agent.toLowerCase() !== "all") {
-      conditions.push("LOWER(username) = ?");
-      params.push(agent.toLowerCase());
     }
 
     if (conditions.length > 0) {
       sql += " WHERE " + conditions.join(" AND ");
     }
 
-    sql += " ORDER BY id ASC LIMIT ?";
+    sql += " ORDER BY id DESC LIMIT ?";
     params.push(limit);
 
     const logs = await runNaisysDbCommand<NaisysLogEntry[]>(sql, params);
+
+    // Resort ascending
+    logs.sort((a, b) => a.id - b.id);
 
     return logs.map((log) => ({
       id: log.id,

@@ -17,7 +17,8 @@ const createSettingsTable = `
   CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     settings_json TEXT NOT NULL,
-    modify_date TEXT NOT NULL
+    modify_date TEXT NOT NULL,
+    read_status_json TEXT DEFAULT '{}'
   )
 `;
 

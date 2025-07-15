@@ -1,14 +1,14 @@
 import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Text, Stack, Card, Badge, Group } from "@mantine/core";
-import { IconRobot } from "@tabler/icons-react";
+import { IconRobot, IconFileText } from "@tabler/icons-react";
 import { Agent } from "shared";
 import { useNaisysDataContext } from "../contexts/NaisysDataContext";
 
 export const AgentSidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { agents, isLoading } = useNaisysDataContext();
+  const { agents, isLoading, unreadLogStatus } = useNaisysDataContext();
 
   const isAgentSelected = (agentName: string) => {
     const pathParts = location.pathname.split("/");
@@ -87,6 +87,20 @@ export const AgentSidebar: React.FC = () => {
                     <Text size="sm" fw={500}>
                       {agent.name}
                     </Text>
+                    {unreadLogStatus[agent.name.toLowerCase()] && (
+                      <Badge
+                        size="xs"
+                        variant="filled"
+                        color="blue"
+                        p={0}
+                        pl={1}
+                        pt={3}
+                        w={20}
+                        h={20}
+                      >
+                        <IconFileText size="0.8rem" />
+                      </Badge>
+                    )}
                   </Group>
                   <Text size="xs" c="dimmed">
                     {agent.title}

@@ -9,7 +9,7 @@ export const useNaisysData = () => {
   const queryFn = useCallback(async () => {
     const params: NaisysDataParams = {
       after: lastLogIdRef.current,
-      limit: 100,
+      limit: 10000,
     };
 
     const response = await getNaisysData(params);

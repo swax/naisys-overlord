@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Text, Stack, Group, Loader, Alert } from "@mantine/core";
 import { useParams } from "react-router-dom";
 import { useNaisysDataContext } from "../contexts/NaisysDataContext";
@@ -102,12 +102,28 @@ export const Log: React.FC = () => {
     getLogsForAgent,
     isLoading: logsLoading,
     error: logsError,
+    updateReadStatus,
   } = useNaisysDataContext();
   const [autoScroll, setAutoScroll] = useState(true);
+  const lastReadLogIdRef = useRef<Record<string, number>>({});
 
   // Get filtered logs for the current agent
   const logs = getLogsForAgent(agentParam);
   const groupedLogs = groupPromptEntries(logs);
+
+  // Update read status when viewing logs - only when latest log ID changes
+  useEffect(() => {
+    if (logs.length > 0 && agentParam) {
+      const latestLogId = Math.max(...logs.map((log) => log.id));
+      const previousLatestLogId = lastReadLogIdRef.current[agentParam] || 0;
+
+      // Only update if the latest log ID has actually changed
+      if (latestLogId > previousLatestLogId) {
+        lastReadLogIdRef.current[agentParam] = latestLogId;
+        updateReadStatus(agentParam, latestLogId);
+      }
+    }
+  }, [logs.length]);
 
   // Auto-scroll to bottom when new logs arrive
   useEffect(() => {
