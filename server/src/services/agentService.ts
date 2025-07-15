@@ -1,8 +1,5 @@
 import sqlite3 from "sqlite3";
-import { promises as fs } from "fs";
-import path from "path";
 import { Agent } from "shared";
-import { getSettings } from "./settingsService.js";
 import { runNaisysDbCommand } from "../database/naisysDatabase.js";
 
 sqlite3.verbose();

@@ -14,7 +14,7 @@ const getLogColor = (log: LogEntry) => {
 
 const formatLogTitle = (log: LogEntry) => {
   const date = new Date(log.date).toLocaleString();
-  return `Date: ${date}\nType: ${log.type}\nSource: ${log.source}\nInput Mode: ${log.inputMode}\nRole: ${log.role}`;
+  return `Date: ${date}\nType: ${log.type}\nSource: ${log.source}\nRole: ${log.role}`;
 };
 
 const LogEntryComponent: React.FC<{ log: LogEntry }> = ({ log }) => {

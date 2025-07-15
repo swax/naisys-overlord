@@ -7,12 +7,12 @@ const overlordDbPth = process.env.OVERLORD_DB_PATH || "./overlord.db";
 const createSessionTable = `
   CREATE TABLE IF NOT EXISTS sessions (
     token TEXT PRIMARY KEY,
-    username TEXT NOT NULL,
     start_date TEXT NOT NULL,
     expire_date TEXT NOT NULL
   )
 `;
 
+/** In a multiple user setup, settings json would be system wide, but read status would be per user */
 const createSettingsTable = `
   CREATE TABLE IF NOT EXISTS settings (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

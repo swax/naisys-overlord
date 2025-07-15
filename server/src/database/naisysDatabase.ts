@@ -11,7 +11,11 @@ export async function runNaisysDbCommand<T>(
 ): Promise<T> {
   const settings = await getSettings();
 
-  if (!settings?.naisysDataFolderPath) {
+  if (!settings) {
+    throw new Error("Settings not found. Please ensure they are initialized.");
+  }
+
+  if (!settings.naisysDataFolderPath) {
     throw new Error("Naisys data folder path is not set in settings.");
   }
 

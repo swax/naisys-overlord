@@ -30,28 +30,13 @@ export async function getSettings(): Promise<Settings | null> {
   `);
 
   if (!settingsRecords?.length) {
-    throw new Error("No settings found in the database.");
+    return null;
   }
 
   return JSON.parse(settingsRecords[0].settings_json) as Settings;
 }
 
-export async function getReadStatus(username: string): Promise<Record<string, number> | null> {
-  const settingsRecords = await runOverlordDbCommand<SettingsRecord[] | null>(`
-    SELECT read_status_json
-    FROM settings 
-    WHERE id = 1
-  `);
-
-  if (!settingsRecords?.length) {
-    return {};
-  }
-
-  const readStatusByUser = JSON.parse(settingsRecords[0].read_status_json || '{}');
-  return readStatusByUser[username] || {};
-}
-
-export async function getAllReadStatus(): Promise<Record<string, Record<string, number>>> {
+export async function getReadStatus(): Promise<Record<string, number>> {
   const settingsRecords = await runOverlordDbCommand<SettingsRecord[] | null>(`
     SELECT read_status_json
     FROM settings 
@@ -65,7 +50,7 @@ export async function getAllReadStatus(): Promise<Record<string, Record<string, 
   return JSON.parse(settingsRecords[0].read_status_json || '{}');
 }
 
-export async function updateReadStatus(username: string, agentName: string, lastReadLogId: number): Promise<void> {
+export async function updateReadStatus(agentName: string, lastReadLogId: number): Promise<void> {
   // First get current read status
   const settingsRecords = await runOverlordDbCommand<SettingsRecord[] | null>(`
     SELECT read_status_json
@@ -73,16 +58,16 @@ export async function updateReadStatus(username: string, agentName: string, last
     WHERE id = 1
   `);
 
-  let readStatusByUser: Record<string, Record<string, number>> = {};
+  let readStatusByAgent: Record<string, number> = {};
   if (settingsRecords?.length) {
-    readStatusByUser = JSON.parse(settingsRecords[0].read_status_json || '{}');
+    readStatusByAgent = JSON.parse(settingsRecords[0].read_status_json || '{}');
   }
 
   // Update the read status for this user and agent
-  if (!readStatusByUser[username]) {
-    readStatusByUser[username] = {};
+  if (!readStatusByAgent) {
+    readStatusByAgent = {};
   }
-  readStatusByUser[username][agentName] = lastReadLogId;
+  readStatusByAgent[agentName] = lastReadLogId;
 
   // Save back to database
   return await runOverlordDbCommand<void>(
@@ -91,6 +76,6 @@ export async function updateReadStatus(username: string, agentName: string, last
     SET read_status_json = ?, modify_date = ?
     WHERE id = 1
   `,
-    [JSON.stringify(readStatusByUser), new Date().toISOString()],
+    [JSON.stringify(readStatusByAgent), new Date().toISOString()],
   );
 }

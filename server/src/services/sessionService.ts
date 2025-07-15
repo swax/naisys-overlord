@@ -2,35 +2,39 @@ import { runOverlordDbCommand } from "../database/overlordDatabase";
 
 export interface Session {
   token: string;
-  username: string;
   startDate: string;
   expireDate: string;
 }
 
 export async function createSession(
   token: string,
-  username: string,
   startDate: Date,
   expireDate: Date,
 ): Promise<void> {
   await runOverlordDbCommand<void>(
     `
-    INSERT INTO sessions (token, username, start_date, expire_date)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO sessions (token, start_date, expire_date)
+    VALUES (?, ?, ?)
   `,
-    [token, username, startDate.toISOString(), expireDate.toISOString()],
+    [token, startDate.toISOString(), expireDate.toISOString()],
   );
 }
 
 export async function getSession(token: string): Promise<Session | null> {
-  return await runOverlordDbCommand<Session | null>(
+  const sessions = await runOverlordDbCommand<Session[] | null>(
     `
-    SELECT token, username, start_date as startDate, expire_date as expireDate
+    SELECT token, start_date as startDate, expire_date as expireDate
     FROM sessions
     WHERE token = ? AND expire_date > datetime('now')
   `,
     [token],
   );
+
+  if (sessions && sessions.length > 0) {
+    return sessions[0];
+  } else {
+    return null;
+  }
 }
 
 export async function deleteExpiredSessions(): Promise<void> {

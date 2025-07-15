@@ -49,7 +49,7 @@ export default async function accessRoutes(
 
         try {
           // Store session in database
-          await createSession(token, "admin", startDate, expireDate);
+          await createSession(token, startDate, expireDate);
 
           // Set HTTP-only cookie
           reply.setCookie("session_token", token, {
@@ -99,7 +99,6 @@ export default async function accessRoutes(
       if (session) {
         return {
           success: true,
-          username: session.username,
           startDate: session.startDate,
           expireDate: session.expireDate,
         };

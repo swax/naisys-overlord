@@ -81,7 +81,7 @@ export default async function dataRoutes(
           });
         }
 
-        await updateReadStatus(session.username, agentName, lastReadLogId);
+        await updateReadStatus(agentName, lastReadLogId);
 
         return {
           success: true,

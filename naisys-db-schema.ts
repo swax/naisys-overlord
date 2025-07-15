@@ -64,6 +64,5 @@ export const createContextLogTable = `CREATE TABLE ContextLog (
     source TEXT NOT NULL,
     type TEXT NOT NULL,
     message TEXT NOT NULL,
-    date TEXT NOT NULL,
-    inputMode TEXT NOT NULL
+    date TEXT NOT NULL
   )`;
