@@ -11,7 +11,7 @@ export interface NaisysData {
 
 export async function getNaisysData(
   after?: number,
-  limit: number = 100
+  limit: number = 100,
 ): Promise<NaisysData> {
   try {
     // Fetch agents and logs in parallel
@@ -27,10 +27,10 @@ export async function getNaisysData(
     };
   } catch (error) {
     console.error("Error fetching NAISYS data:", error);
-    
+
     // Return empty data on error
     return {
-      agents: [{ name: "All", title: "All Agents", online: true }],
+      agents: [],
       logs: [],
       timestamp: new Date().toISOString(),
     };

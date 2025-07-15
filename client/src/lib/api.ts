@@ -122,20 +122,22 @@ export const saveSettings = async (
   }
 };
 
-
 export interface NaisysDataParams {
   after?: number;
   limit?: number;
 }
 
-export const getNaisysData = async (params?: NaisysDataParams): Promise<NaisysDataResponse> => {
+export const getNaisysData = async (
+  params?: NaisysDataParams,
+): Promise<NaisysDataResponse> => {
   const queryParams = new URLSearchParams();
-  if (params?.after !== undefined) queryParams.append("after", params.after.toString());
+  if (params?.after !== undefined)
+    queryParams.append("after", params.after.toString());
   if (params?.limit) queryParams.append("limit", params.limit.toString());
-  
-  const url = queryParams.toString() 
+
+  const url = queryParams.toString()
     ? `${apiEndpoints.data}?${queryParams.toString()}`
     : apiEndpoints.data;
-    
+
   return await api.get<NaisysDataResponse>(url);
 };

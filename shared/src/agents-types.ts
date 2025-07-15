@@ -5,4 +5,3 @@ export interface Agent {
   lastActive?: string;
   agentPath?: string;
 }
-

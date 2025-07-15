@@ -10,11 +10,15 @@ interface NaisysDataContextType {
   getLogsForAgent: (agent?: string) => LogEntry[];
 }
 
-const NaisysDataContext = createContext<NaisysDataContextType | undefined>(undefined);
+const NaisysDataContext = createContext<NaisysDataContextType | undefined>(
+  undefined,
+);
 
-export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [allLogs, setAllLogs] = useState<LogEntry[]>([]);
-  const [agents, setAgents] = useState<Agent[]>([{ name: "All", title: "All Agents", online: true }]);
+  const [agents, setAgents] = useState<Agent[]>([]);
   const { data: naisysResponse, isLoading, error } = useNaisysData();
 
   // Update data from NAISYS polling responses
@@ -53,7 +57,7 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       return allLogs;
     }
     return allLogs.filter(
-      (log) => log.username.toLowerCase() === agent.toLowerCase()
+      (log) => log.username.toLowerCase() === agent.toLowerCase(),
     );
   };
 
@@ -65,13 +69,19 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     getLogsForAgent,
   };
 
-  return <NaisysDataContext.Provider value={value}>{children}</NaisysDataContext.Provider>;
+  return (
+    <NaisysDataContext.Provider value={value}>
+      {children}
+    </NaisysDataContext.Provider>
+  );
 };
 
 export const useNaisysDataContext = (): NaisysDataContextType => {
   const context = useContext(NaisysDataContext);
   if (context === undefined) {
-    throw new Error("useNaisysDataContext must be used within a NaisysDataProvider");
+    throw new Error(
+      "useNaisysDataContext must be used within a NaisysDataProvider",
+    );
   }
   return context;
 };

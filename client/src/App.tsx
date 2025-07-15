@@ -59,7 +59,6 @@ const AppContent: React.FC = () => {
   const location = useLocation();
   const { isLoading, error } = useNaisysDataContext();
 
-
   const isActive = (path: string) => {
     const currentSection = location.pathname.split("/")[1];
     const targetSection = path.replace("/", "");

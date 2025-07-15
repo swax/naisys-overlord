@@ -61,7 +61,7 @@ export default async function settingsRoutes(
       try {
         // Validate the input with Zod
         const settings = SettingsSchema.safeParse(request.body.settings);
-        
+
         if (!settings.success) {
           reply.code(400);
           return {

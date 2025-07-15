@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Text, Stack, Group, ScrollArea, Loader, Alert } from "@mantine/core";
+import { Text, Stack, Group, Loader, Alert } from "@mantine/core";
 import { useParams } from "react-router-dom";
 import { useNaisysDataContext } from "../contexts/NaisysDataContext";
 import { LogEntry } from "../lib/api";
@@ -8,6 +8,7 @@ const getLogColor = (log: LogEntry) => {
   if (log.type === "comment") return "green";
   if (log.type === "error") return "red";
   if (log.source === "llm" || log.source == "endPrompt") return "magenta";
+  if (log.source === "startPrompt") return "white";
   return undefined;
 };
 
@@ -102,7 +103,6 @@ export const Log: React.FC = () => {
     isLoading: logsLoading,
     error: logsError,
   } = useNaisysDataContext();
-  const scrollRef = useRef<HTMLDivElement>(null);
   const [autoScroll, setAutoScroll] = useState(true);
 
   // Get filtered logs for the current agent
@@ -111,22 +111,27 @@ export const Log: React.FC = () => {
 
   // Auto-scroll to bottom when new logs arrive
   useEffect(() => {
-    if (autoScroll && scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: "smooth",
+    if (autoScroll) {
+      const htmlElement = document.documentElement;
+      htmlElement.scrollTo({
+        top: htmlElement.scrollHeight,
       });
     }
   }, [groupedLogs, autoScroll]);
 
   // Handle scroll detection to pause auto-scroll when user scrolls up
   const handleScroll = () => {
-    if (scrollRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-      const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
-      setAutoScroll(isAtBottom);
-    }
+    const htmlElement = document.documentElement;
+    const { scrollTop, scrollHeight, clientHeight } = htmlElement;
+    const isAtBottom = scrollTop + clientHeight >= scrollHeight - 10;
+    setAutoScroll(isAtBottom);
   };
+
+  // Add scroll event listener to html element
+  useEffect(() => {
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   if (logsLoading) {
     return <Loader size="lg" />;
@@ -151,29 +156,23 @@ export const Log: React.FC = () => {
             <Text>Loading logs...</Text>
           </Group>
         )}
-        <ScrollArea
-          h="calc(100vh - 100px)"
-          viewportRef={scrollRef}
-          onScrollPositionChange={handleScroll}
-        >
-          <Stack gap={0}>
-            {groupedLogs.map((item) => (
-              <GroupedLogComponent
-                key={
-                  Array.isArray(item)
-                    ? item.map((log) => log.id).join("-")
-                    : item.id
-                }
-                item={item}
-              />
-            ))}
-            {logs.length === 0 && !logsLoading && (
-              <Text c="dimmed" ta="center">
-                No logs available
-              </Text>
-            )}
-          </Stack>
-        </ScrollArea>
+        <Stack gap={0}>
+          {groupedLogs.map((item) => (
+            <GroupedLogComponent
+              key={
+                Array.isArray(item)
+                  ? item.map((log) => log.id).join("-")
+                  : item.id
+              }
+              item={item}
+            />
+          ))}
+          {logs.length === 0 && !logsLoading && (
+            <Text c="dimmed" ta="center">
+              No logs available
+            </Text>
+          )}
+        </Stack>
         {!autoScroll && (
           <Text size="sm" c="blue" ta="center">
             Auto-scroll paused. Scroll to bottom to resume.
@@ -212,29 +211,23 @@ export const Log: React.FC = () => {
         </Group>
       )}
 
-      <ScrollArea
-        h="calc(100vh - 100px)" // Adjust height to fit header/footer if needed
-        viewportRef={scrollRef}
-        onScrollPositionChange={handleScroll}
-      >
-        <Stack gap={0}>
-          {groupedLogs.map((item) => (
-            <GroupedLogComponent
-              key={
-                Array.isArray(item)
-                  ? item.map((log) => log.id).join("-")
-                  : item.id
-              }
-              item={item}
-            />
-          ))}
-          {logs.length === 0 && !logsLoading && (
-            <Text c="dimmed" ta="center">
-              No logs available for {agent.name}
-            </Text>
-          )}
-        </Stack>
-      </ScrollArea>
+      <Stack gap={0}>
+        {groupedLogs.map((item) => (
+          <GroupedLogComponent
+            key={
+              Array.isArray(item)
+                ? item.map((log) => log.id).join("-")
+                : item.id
+            }
+            item={item}
+          />
+        ))}
+        {logs.length === 0 && !logsLoading && (
+          <Text c="dimmed" ta="center">
+            No logs available for {agent.name}
+          </Text>
+        )}
+      </Stack>
 
       {!autoScroll && (
         <Text size="sm" c="blue" ta="center">

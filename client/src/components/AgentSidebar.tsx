@@ -62,45 +62,48 @@ export const AgentSidebar: React.FC = () => {
         AGENTS
       </Text>
       <Stack gap="xs">
-        {agents.map((agent, index) => (
-          <Card
-            key={index}
-            padding="sm"
-            radius="md"
-            withBorder
-            style={{
-              cursor: "pointer",
-              backgroundColor: isAgentSelected(agent.name)
-                ? "var(--mantine-color-blue-9)"
-                : undefined,
-              opacity: agent.name === "All" ? 1 : agent.online ? 1 : 0.5,
-            }}
-            onClick={() => handleAgentClick(agent)}
-          >
-            <Group justify="space-between" align="center">
-              <div>
-                <Group gap="xs" align="center">
-                  <IconRobot size="1rem" />
-                  <Text size="sm" fw={500}>
-                    {agent.name}
+        {agents
+          .slice()
+          .sort((a, b) => a.name.localeCompare(b.name))
+          .map((agent, index) => (
+            <Card
+              key={index}
+              padding="sm"
+              radius="md"
+              withBorder
+              style={{
+                cursor: "pointer",
+                backgroundColor: isAgentSelected(agent.name)
+                  ? "var(--mantine-color-blue-9)"
+                  : undefined,
+                opacity: agent.name === "All" ? 1 : agent.online ? 1 : 0.5,
+              }}
+              onClick={() => handleAgentClick(agent)}
+            >
+              <Group justify="space-between" align="center">
+                <div>
+                  <Group gap="xs" align="center">
+                    <IconRobot size="1rem" />
+                    <Text size="sm" fw={500}>
+                      {agent.name}
+                    </Text>
+                  </Group>
+                  <Text size="xs" c="dimmed">
+                    {agent.title}
                   </Text>
-                </Group>
-                <Text size="xs" c="dimmed">
-                  {agent.title}
-                </Text>
-              </div>
-              {agent.name !== "All" && (
-                <Badge
-                  size="xs"
-                  variant="light"
-                  color={agent.online ? "green" : "gray"}
-                >
-                  {agent.online ? "online" : "offline"}
-                </Badge>
-              )}
-            </Group>
-          </Card>
-        ))}
+                </div>
+                {agent.name !== "All" && (
+                  <Badge
+                    size="xs"
+                    variant="light"
+                    color={agent.online ? "green" : "gray"}
+                  >
+                    {agent.online ? "online" : "offline"}
+                  </Badge>
+                )}
+              </Group>
+            </Card>
+          ))}
       </Stack>
     </>
   );

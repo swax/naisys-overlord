@@ -17,7 +17,7 @@ interface NaisysUser {
 }
 
 export async function getAgents(): Promise<Agent[]> {
-  const agents: Agent[] = [{ name: "All", title: "All Agents", online: true }];
+  const agents: Agent[] = [];
 
   try {
     const users = await runNaisysDbCommand<NaisysUser[]>(

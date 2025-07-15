@@ -13,12 +13,18 @@ export const useNaisysData = () => {
     };
 
     const response = await getNaisysData(params);
-    
-    if (response.success && response.data?.logs && response.data.logs.length > 0) {
-      const maxId = Math.max(...response.data.logs.map((log: LogEntry) => log.id));
+
+    if (
+      response.success &&
+      response.data?.logs &&
+      response.data.logs.length > 0
+    ) {
+      const maxId = Math.max(
+        ...response.data.logs.map((log: LogEntry) => log.id),
+      );
       lastLogIdRef.current = maxId;
     }
-    
+
     return response;
   }, []);
 
@@ -36,10 +42,10 @@ export const useNaisysData = () => {
 // Hook to get agents from NAISYS data
 export const useAgentsFromNaisys = () => {
   const naisysQuery = useNaisysData();
-  
+
   const agents = useMemo((): Agent[] => {
     if (!naisysQuery.data?.success || !naisysQuery.data.data?.agents) {
-      return [{ name: "All", title: "All Agents", online: true }];
+      return [];
     }
     return naisysQuery.data.data.agents;
   }, [naisysQuery.data]);
@@ -54,22 +60,22 @@ export const useAgentsFromNaisys = () => {
 // Hook to get logs for a specific agent from NAISYS data
 export const useLogsFromNaisys = (agent?: string) => {
   const naisysQuery = useNaisysData();
-  
+
   const filteredLogs = useMemo((): LogEntry[] => {
     if (!naisysQuery.data?.success || !naisysQuery.data.data?.logs) {
       return [];
     }
-    
+
     const allLogs = naisysQuery.data.data.logs;
-    
+
     // If no agent specified, return all logs
     if (!agent) {
       return allLogs;
     }
-    
+
     // Filter logs for the specific agent
     return allLogs.filter(
-      (log: LogEntry) => log.username.toLowerCase() === agent.toLowerCase()
+      (log: LogEntry) => log.username.toLowerCase() === agent.toLowerCase(),
     );
   }, [naisysQuery.data, agent]);
 
