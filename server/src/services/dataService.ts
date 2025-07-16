@@ -1,14 +1,14 @@
-import { Agent } from "shared";
+import { Agent, ReadStatus } from "shared";
 import { LogEntry } from "shared/src/log-types.js";
 import { getAgents } from "./agentService.js";
 import { getLogs } from "./logService.js";
-import { getReadStatus } from "./settingsService.js";
+import { getReadStatus } from "./readService.js";
 
 export interface NaisysData {
   agents: Agent[];
   logs: LogEntry[];
   timestamp: string;
-  readStatus: Record<string, number>;
+  readStatus: Record<string, ReadStatus>;
 }
 
 export async function getNaisysData(
@@ -20,6 +20,7 @@ export async function getNaisysData(
     const [agents, logs, readStatus] = await Promise.all([
       getAgents(),
       getLogs(after, limit), // No agent filter - get all logs
+      // Important this happens last as getLogs() updates read status
       getReadStatus(),
     ]);
 

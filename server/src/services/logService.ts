@@ -1,6 +1,7 @@
 import { LogRole, LogSource, LogType } from "shared";
 import { LogEntry } from "shared/src/log-types.js";
 import { runNaisysDbCommand } from "../database/naisysDatabase.js";
+import { updateLatestLogIds } from "./readService.js";
 
 interface NaisysLogEntry {
   id: number;
@@ -37,12 +38,12 @@ export async function getLogs(
     sql += " ORDER BY id DESC LIMIT ?";
     params.push(limit);
 
-    const logs = await runNaisysDbCommand<NaisysLogEntry[]>(sql, params);
+    const dbLogs = await runNaisysDbCommand<NaisysLogEntry[]>(sql, params);
 
     // Resort ascending
-    logs.sort((a, b) => a.id - b.id);
+    dbLogs.sort((a, b) => a.id - b.id);
 
-    return logs.map((log) => ({
+    const logs = dbLogs.map((log) => ({
       id: log.id,
       username: log.username,
       role: log.role,
@@ -51,6 +52,11 @@ export async function getLogs(
       message: log.message,
       date: log.date,
     }));
+
+    // Used for tracking unread logs
+    updateLatestLogIds(logs);
+
+    return logs;
   } catch (error) {
     console.error("Error fetching logs from Naisys database:", error);
     return [];

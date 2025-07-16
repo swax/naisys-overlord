@@ -1,14 +1,14 @@
+import { Badge, Card, Group, Stack, Text, Tooltip } from "@mantine/core";
+import { IconFileText, IconRobot } from "@tabler/icons-react";
 import React from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Text, Stack, Card, Badge, Group } from "@mantine/core";
-import { IconRobot, IconFileText } from "@tabler/icons-react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Agent } from "shared";
 import { useNaisysDataContext } from "../contexts/NaisysDataContext";
 
 export const AgentSidebar: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { agents, isLoading, unreadLogStatus } = useNaisysDataContext();
+  const { agents, isLoading, readStatus } = useNaisysDataContext();
 
   const isAgentSelected = (agentName: string) => {
     const pathParts = location.pathname.split("/");
@@ -61,7 +61,7 @@ export const AgentSidebar: React.FC = () => {
     const subAgents: Agent[] = [];
     const orphanedSubAgents: Agent[] = [];
 
-    agents.forEach(agent => {
+    agents.forEach((agent) => {
       if (agent.leadUsername) {
         subAgents.push(agent);
       } else {
@@ -73,8 +73,10 @@ export const AgentSidebar: React.FC = () => {
 
     const organizedAgents: Agent[] = [];
 
-    subAgents.forEach(subAgent => {
-      const leadExists = leadAgents.some(lead => lead.name === subAgent.leadUsername);
+    subAgents.forEach((subAgent) => {
+      const leadExists = leadAgents.some(
+        (lead) => lead.name === subAgent.leadUsername,
+      );
       if (!leadExists) {
         orphanedSubAgents.push(subAgent);
       }
@@ -83,17 +85,46 @@ export const AgentSidebar: React.FC = () => {
     orphanedSubAgents.sort((a, b) => a.name.localeCompare(b.name));
     organizedAgents.push(...orphanedSubAgents);
 
-    leadAgents.forEach(leadAgent => {
+    leadAgents.forEach((leadAgent) => {
       organizedAgents.push(leadAgent);
-      
+
       const relatedSubAgents = subAgents
-        .filter(sub => sub.leadUsername === leadAgent.name)
+        .filter((sub) => sub.leadUsername === leadAgent.name)
         .sort((a, b) => a.name.localeCompare(b.name));
-      
+
       organizedAgents.push(...relatedSubAgents);
     });
 
     return organizedAgents;
+  };
+
+  const getUnreadBadge = (agent: Agent) => {
+    const agentReadStatus = readStatus[agent.name.toLowerCase()];
+    if (
+      !agentReadStatus ||
+      agentReadStatus.latestLogId <= agentReadStatus.lastReadLogId
+    ) {
+      return null;
+    }
+
+    return (
+      <Tooltip
+        label={`Latest: ${agentReadStatus.latestLogId}\nLast read: ${agentReadStatus.lastReadLogId}`}
+      >
+        <Badge
+          size="xs"
+          variant="filled"
+          color="blue"
+          p={0}
+          pl={1}
+          pt={3}
+          w={20}
+          h={20}
+        >
+          <IconFileText size="0.8rem" />
+        </Badge>
+      </Tooltip>
+    );
   };
 
   return (
@@ -102,61 +133,47 @@ export const AgentSidebar: React.FC = () => {
         AGENTS
       </Text>
       <Stack gap="xs">
-        {organizeAgentsHierarchically(agents)
-          .map((agent, index) => (
-            <Card
-              key={index}
-              padding="sm"
-              radius="md"
-              withBorder
-              style={{
-                cursor: "pointer",
-                backgroundColor: isAgentSelected(agent.name)
-                  ? "var(--mantine-color-blue-9)"
-                  : undefined,
-                opacity: agent.name === "All" ? 1 : agent.online ? 1 : 0.5,
-                marginLeft: agent.leadUsername ? "1rem" : undefined,
-              }}
-              onClick={() => handleAgentClick(agent)}
-            >
-              <Group justify="space-between" align="center">
-                <div>
-                  <Group gap="xs" align="center">
-                    <IconRobot size="1rem" />
-                    <Text size="sm" fw={500}>
-                      {agent.name}
-                    </Text>
-                    {unreadLogStatus[agent.name.toLowerCase()] && (
-                      <Badge
-                        size="xs"
-                        variant="filled"
-                        color="blue"
-                        p={0}
-                        pl={1}
-                        pt={3}
-                        w={20}
-                        h={20}
-                      >
-                        <IconFileText size="0.8rem" />
-                      </Badge>
-                    )}
-                  </Group>
-                  <Text size="xs" c="dimmed">
-                    {agent.title}
+        {organizeAgentsHierarchically(agents).map((agent, index) => (
+          <Card
+            key={index}
+            padding="sm"
+            radius="md"
+            withBorder
+            style={{
+              cursor: "pointer",
+              backgroundColor: isAgentSelected(agent.name)
+                ? "var(--mantine-color-blue-9)"
+                : undefined,
+              opacity: agent.name === "All" ? 1 : agent.online ? 1 : 0.5,
+              marginLeft: agent.leadUsername ? "1rem" : undefined,
+            }}
+            onClick={() => handleAgentClick(agent)}
+          >
+            <Group justify="space-between" align="center">
+              <div>
+                <Group gap="xs" align="center">
+                  <IconRobot size="1rem" />
+                  <Text size="sm" fw={500}>
+                    {agent.name}
                   </Text>
-                </div>
-                {agent.name !== "All" && (
-                  <Badge
-                    size="xs"
-                    variant="light"
-                    color={agent.online ? "green" : "gray"}
-                  >
-                    {agent.online ? "online" : "offline"}
-                  </Badge>
-                )}
-              </Group>
-            </Card>
-          ))}
+                  {getUnreadBadge(agent)}
+                </Group>
+                <Text size="xs" c="dimmed">
+                  {agent.title}
+                </Text>
+              </div>
+              {agent.name !== "All" && (
+                <Badge
+                  size="xs"
+                  variant="light"
+                  color={agent.online ? "green" : "gray"}
+                >
+                  {agent.online ? "online" : "offline"}
+                </Badge>
+              )}
+            </Group>
+          </Card>
+        ))}
       </Stack>
     </>
   );

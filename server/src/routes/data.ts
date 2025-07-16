@@ -1,12 +1,12 @@
 import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import {
-  NaisysDataResponse,
   NaisysDataRequest,
+  NaisysDataResponse,
+  ReadStatusUpdateRequest,
 } from "shared/src/data-types.js";
-import { validateSession } from "./access.js";
 import { getNaisysData } from "../services/dataService.js";
-import { updateReadStatus } from "../services/settingsService.js";
-import { getSession } from "../services/sessionService.js";
+import { updateLatestReadLogId } from "../services/readService.js";
+import { validateSession } from "./access.js";
 
 export default async function dataRoutes(
   fastify: FastifyInstance,
@@ -55,7 +55,7 @@ export default async function dataRoutes(
 
   // Update read status endpoint
   fastify.post<{
-    Body: { agentName: string; lastReadLogId: number };
+    Body: ReadStatusUpdateRequest;
   }>(
     "/read-status",
     {
@@ -64,24 +64,8 @@ export default async function dataRoutes(
     async (request, reply) => {
       try {
         const { agentName, lastReadLogId } = request.body;
-        const token = request.cookies.session_token;
 
-        if (!token) {
-          return reply.status(401).send({
-            success: false,
-            message: "No session token",
-          });
-        }
-
-        const session = await getSession(token);
-        if (!session) {
-          return reply.status(401).send({
-            success: false,
-            message: "Invalid session",
-          });
-        }
-
-        await updateReadStatus(agentName, lastReadLogId);
+        await updateLatestReadLogId(agentName, lastReadLogId);
 
         return {
           success: true,

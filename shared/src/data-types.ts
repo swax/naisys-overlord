@@ -1,6 +1,11 @@
 import { Agent } from "./agents-types";
 import { LogEntry } from "./log-types";
 
+export interface ReadStatus {
+  lastReadLogId: number;
+  latestLogId: number;
+}
+
 export interface NaisysDataResponse {
   success: boolean;
   message: string;
@@ -8,7 +13,7 @@ export interface NaisysDataResponse {
     agents: Agent[];
     logs: LogEntry[];
     timestamp: string;
-    readStatus: Record<string, number>;
+    readStatus: Record<string, ReadStatus>;
   };
 }
 

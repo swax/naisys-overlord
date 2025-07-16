@@ -1,20 +1,20 @@
 import React, {
   createContext,
   useContext,
-  useState,
   useEffect,
   useMemo,
+  useState,
 } from "react";
-import { LogEntry, Agent } from "../lib/api";
+import { ReadStatus } from "shared";
 import { useNaisysData } from "../hooks/useNaisysData";
+import { Agent, LogEntry } from "../lib/api";
 
 interface NaisysDataContextType {
   allLogs: LogEntry[];
   agents: Agent[];
   isLoading: boolean;
   error: Error | null;
-  readStatus: Record<string, number>;
-  unreadLogStatus: Record<string, boolean>;
+  readStatus: Record<string, ReadStatus>;
   getLogsForAgent: (agent?: string) => LogEntry[];
   updateReadStatus: (agentName: string, lastReadLogId: number) => Promise<void>;
 }
@@ -28,10 +28,7 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [allLogs, setAllLogs] = useState<LogEntry[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
-  const [readStatus, setReadStatus] = useState<Record<string, number>>({});
-  const [unreadLogStatus, setUnreadLogStatus] = useState<
-    Record<string, boolean>
-  >({});
+  const [readStatus, setReadStatus] = useState<Record<string, ReadStatus>>({});
   const { data: naisysResponse, isLoading, error } = useNaisysData();
 
   // Update data from NAISYS polling responses
@@ -61,22 +58,6 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
 
         return [...prevLogs, ...trulyNewLogs];
       });
-
-      // iternate readStatus
-      const newUnreadLogStatus: Record<string, boolean> = {};
-
-      for (const agent of naisysResponse.data.agents) {
-        const agentName = agent.name.toLowerCase();
-        const lastReadLogId = naisysResponse.data.readStatus[agentName] || 0;
-        const latestLogId = Math.max(
-          ...naisysResponse.data.logs
-            .filter((log) => log.username.toLowerCase() === agentName)
-            .map((log) => log.id),
-          0,
-        );
-        newUnreadLogStatus[agentName] = latestLogId > lastReadLogId;
-      }
-      setUnreadLogStatus(newUnreadLogStatus);
     }
   }, [naisysResponse]);
 
@@ -108,15 +89,19 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (response.ok) {
-        // Update local state immediately
-        setReadStatus((prev) => ({
-          ...prev,
-          [agentName]: lastReadLogId,
-        }));
+        const updateStatus = readStatus[agentName] || {
+          lastReadLogId: -1,
+          latestLogId: -1,
+        };
 
-        setUnreadLogStatus((prev) => ({
-          ...prev,
-          [agentName]: false,
+        updateStatus.lastReadLogId = Math.max(
+          updateStatus.lastReadLogId,
+          lastReadLogId,
+        );
+
+        setReadStatus((prevStatus) => ({
+          ...prevStatus,
+          [agentName]: updateStatus,
         }));
       }
     } catch (error) {
@@ -132,7 +117,6 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
     readStatus,
     getLogsForAgent,
     updateReadStatus,
-    unreadLogStatus,
   };
 
   return (
