@@ -29,6 +29,7 @@ export async function getAgents(): Promise<Agent[]> {
         online: isAgentOnline(user.lastActive),
         lastActive: user.lastActive,
         agentPath: user.agentPath,
+        leadUsername: user.leadUsername || undefined,
       });
     });
   } catch (error) {

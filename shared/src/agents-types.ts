@@ -4,4 +4,5 @@ export interface Agent {
   online: boolean;
   lastActive?: string;
   agentPath?: string;
+  leadUsername?: string;
 }

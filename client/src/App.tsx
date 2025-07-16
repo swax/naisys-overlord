@@ -1,48 +1,46 @@
-import React from "react";
 import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  useNavigate,
-  useLocation,
-} from "react-router-dom";
-import { QueryClientProvider } from "@tanstack/react-query";
-import {
-  MantineProvider,
+  ActionIcon,
   AppShell,
   Burger,
-  Group,
-  Text,
-  ActionIcon,
   Flex,
+  Group,
+  MantineProvider,
+  Text,
   Tooltip,
 } from "@mantine/core";
+import "@mantine/core/styles.css";
 import { useDisclosure } from "@mantine/hooks";
 import { Notifications } from "@mantine/notifications";
+import "@mantine/notifications/styles.css";
 import {
-  IconMail,
-  IconFileText,
-  IconSettings,
   IconDeviceGamepad2,
+  IconFileText,
   IconLock,
   IconLockOpen,
+  IconMail,
   IconPlugConnected,
   IconPlugConnectedX,
 } from "@tabler/icons-react";
-import { queryClient } from "./lib/queryClient";
-import { Home } from "./pages/Home";
-import { Log } from "./pages/Log";
-import { Mail } from "./pages/Mail";
-import { Controls } from "./pages/Controls";
-import { SettingsDialog } from "./components/SettingsDialog";
+import { QueryClientProvider } from "@tanstack/react-query";
+import React from "react";
+import {
+  Route,
+  BrowserRouter as Router,
+  Routes,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import { AccessDialog } from "./components/AccessDialog";
 import { AgentSidebar } from "./components/AgentSidebar";
 import {
   NaisysDataProvider,
   useNaisysDataContext,
 } from "./contexts/NaisysDataContext";
-import "@mantine/core/styles.css";
-import "@mantine/notifications/styles.css";
+import { queryClient } from "./lib/queryClient";
+import { Controls } from "./pages/Controls";
+import { Home } from "./pages/Home";
+import { Log } from "./pages/Log";
+import { Mail } from "./pages/Mail";
 
 const AppContent: React.FC = () => {
   const [opened, { toggle }] = useDisclosure();
@@ -50,10 +48,10 @@ const AppContent: React.FC = () => {
     accessModalOpened,
     { open: openAccessModal, close: closeAccessModal },
   ] = useDisclosure(false);
-  const [
+  /*const [
     settingsModalOpened,
     { open: openSettingsModal, close: closeSettingsModal },
-  ] = useDisclosure(false);
+  ] = useDisclosure(false);*/
   const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -155,7 +153,7 @@ const AppContent: React.FC = () => {
                 </ActionIcon>
               </Tooltip>
             </Group>
-            <Group
+            {/*<Group
               gap="xs"
               style={{ cursor: "pointer" }}
               onClick={openSettingsModal}
@@ -165,7 +163,7 @@ const AppContent: React.FC = () => {
                   <IconSettings size="1.2rem" />
                 </ActionIcon>
               </Tooltip>
-            </Group>
+            </Group>*/}
           </Group>
         </Group>
       </AppShell.Header>
@@ -271,10 +269,10 @@ const AppContent: React.FC = () => {
         onAuthenticationChange={setIsAuthenticated}
       />
 
-      <SettingsDialog
+      {/*<SettingsDialog
         opened={settingsModalOpened}
         onClose={closeSettingsModal}
-      />
+      />*/}
     </AppShell>
   );
 };

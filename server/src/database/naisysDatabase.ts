@@ -1,7 +1,7 @@
-import sqlite3 from "sqlite3";
-import { getSettings } from "../services/settingsService";
-import path from "path";
 import * as fs from "fs";
+import path from "path";
+import { env } from "process";
+import sqlite3 from "sqlite3";
 
 sqlite3.verbose();
 
@@ -9,7 +9,7 @@ export async function runNaisysDbCommand<T>(
   sql: string,
   params: any[] = [],
 ): Promise<T> {
-  const settings = await getSettings();
+  /*const settings = await getSettings();
 
   if (!settings) {
     throw new Error("Settings not found. Please ensure they are initialized.");
@@ -17,10 +17,14 @@ export async function runNaisysDbCommand<T>(
 
   if (!settings.naisysDataFolderPath) {
     throw new Error("Naisys data folder path is not set in settings.");
+  }*/
+
+  if (!env.NAISYS_FOLDER_PATH) {
+    throw new Error("NAISYS_FOLDER_PATH environment variable is not set.");
   }
 
   const naisysDbPath = path.join(
-    settings.naisysDataFolderPath,
+    env.NAISYS_FOLDER_PATH, //settings.naisysDataFolderPath,
     "database",
     "naisys.sqlite",
   );
