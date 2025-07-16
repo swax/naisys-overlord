@@ -8,6 +8,7 @@ import type {
   Agent,
   NaisysDataResponse,
   NaisysDataRequest,
+  ThreadMessage,
 } from "shared";
 
 const API_BASE = "/api";
@@ -35,6 +36,7 @@ export type {
   Agent,
   NaisysDataResponse,
   NaisysDataRequest,
+  ThreadMessage,
 };
 
 export const api = {
@@ -123,17 +125,24 @@ export const saveSettings = async (
 };
 
 export interface NaisysDataParams {
-  after?: number;
-  limit?: number;
+  logsAfter?: number;
+  logsLimit?: number;
+  mailAfter?: number;
+  mailLimit?: number;
 }
 
 export const getNaisysData = async (
   params?: NaisysDataParams,
 ): Promise<NaisysDataResponse> => {
   const queryParams = new URLSearchParams();
-  if (params?.after !== undefined)
-    queryParams.append("after", params.after.toString());
-  if (params?.limit) queryParams.append("limit", params.limit.toString());
+  if (params?.logsAfter !== undefined)
+    queryParams.append("logsAfter", params.logsAfter.toString());
+  if (params?.logsLimit)
+    queryParams.append("logsLimit", params.logsLimit.toString());
+  if (params?.mailAfter !== undefined)
+    queryParams.append("mailAfter", params.mailAfter.toString());
+  if (params?.mailLimit)
+    queryParams.append("mailLimit", params.mailLimit.toString());
 
   const url = queryParams.toString()
     ? `${apiEndpoints.data}?${queryParams.toString()}`

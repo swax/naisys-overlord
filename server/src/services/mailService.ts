@@ -1,0 +1,135 @@
+import { ThreadMessage, ThreadMember } from "shared/src/mail-types.js";
+import { runNaisysDbCommand } from "../database/naisysDatabase.js";
+
+interface NaisysThreadMessage {
+  id: number;
+  threadId: number;
+  userId: number;
+  username: string;
+  subject: string;
+  message: string;
+  date: string;
+}
+
+interface NaisysThreadMember {
+  threadId: number;
+  userId: number;
+  username: string;
+  newMsgId: number;
+  archived: number;
+}
+
+export async function getThreadMessages(
+  after?: number,
+  limit: number = 1000,
+): Promise<ThreadMessage[]> {
+  try {
+    let sql = `
+      SELECT 
+        tm.id, 
+        tm.threadId, 
+        tm.userId, 
+        u.username,
+        t.subject,
+        tm.message, 
+        tm.date
+      FROM ThreadMessages tm
+      JOIN Threads t ON tm.threadId = t.id
+      JOIN Users u ON tm.userId = u.id
+    `;
+    const params: any[] = [];
+
+    const conditions: string[] = [];
+
+    if (after !== undefined && after > 0) {
+      conditions.push("tm.id > ?");
+      params.push(after);
+    }
+
+    if (conditions.length > 0) {
+      sql += " WHERE " + conditions.join(" AND ");
+    }
+
+    sql += " ORDER BY tm.id DESC LIMIT ?";
+    params.push(limit);
+
+    const dbMessages = await runNaisysDbCommand<NaisysThreadMessage[]>(
+      sql,
+      params,
+    );
+
+    // Resort ascending
+    dbMessages.sort((a, b) => a.id - b.id);
+
+    // Get unique thread IDs to fetch members
+    const threadIds = [...new Set(dbMessages.map((msg) => msg.threadId))];
+
+    // Fetch members for all threads
+    const membersMap = await getThreadMembersMap(threadIds);
+
+    const messages = dbMessages.map((msg) => ({
+      id: msg.id,
+      threadId: msg.threadId,
+      userId: msg.userId,
+      username: msg.username,
+      subject: msg.subject,
+      message: msg.message,
+      date: msg.date,
+      members: membersMap[msg.threadId] || [],
+    }));
+
+    return messages;
+  } catch (error) {
+    console.error(
+      "Error fetching thread messages from Naisys database:",
+      error,
+    );
+    return [];
+  }
+}
+
+async function getThreadMembersMap(
+  threadIds: number[],
+): Promise<Record<number, ThreadMember[]>> {
+  if (threadIds.length === 0) return {};
+
+  try {
+    const placeholders = threadIds.map(() => "?").join(",");
+    const sql = `
+      SELECT 
+        tm.threadId,
+        tm.userId,
+        u.username,
+        tm.newMsgId,
+        tm.archived
+      FROM ThreadMembers tm
+      JOIN Users u ON tm.userId = u.id
+      WHERE tm.threadId IN (${placeholders})
+    `;
+
+    const dbMembers = await runNaisysDbCommand<NaisysThreadMember[]>(
+      sql,
+      threadIds,
+    );
+
+    const membersMap: Record<number, ThreadMember[]> = {};
+
+    dbMembers.forEach((member) => {
+      if (!membersMap[member.threadId]) {
+        membersMap[member.threadId] = [];
+      }
+
+      membersMap[member.threadId].push({
+        userId: member.userId,
+        username: member.username,
+        newMsgId: member.newMsgId,
+        archived: member.archived === 1,
+      });
+    });
+
+    return membersMap;
+  } catch (error) {
+    console.error("Error fetching thread members from Naisys database:", error);
+    return {};
+  }
+}

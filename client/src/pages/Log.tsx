@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Text, Stack, Group, Loader, Alert } from "@mantine/core";
+import { Text, Stack, Group, Loader, Alert, Card } from "@mantine/core";
 import { useParams } from "react-router-dom";
 import { useNaisysDataContext } from "../contexts/NaisysDataContext";
 import { LogEntry } from "../lib/api";
@@ -156,9 +156,12 @@ export const Log: React.FC = () => {
   if (!agentParam) {
     return (
       <Stack gap="md" style={{ height: "100%" }}>
-        <Text size="xl" fw={600}>
-          All Agent Logs
-        </Text>
+        <Group justify="space-between">
+          <Text size="xl" fw={600}>
+            Log Overview
+          </Text>
+        </Group>
+
         {logsError && (
           <Alert color="red" title="Error loading logs">
             {logsError instanceof Error
@@ -166,33 +169,26 @@ export const Log: React.FC = () => {
               : "Failed to load logs"}
           </Alert>
         )}
-        {logsLoading && logs.length === 0 && (
+        
+        {logsLoading ? (
           <Group justify="center">
             <Loader size="md" />
             <Text>Loading logs...</Text>
           </Group>
-        )}
-        <Stack gap={0}>
-          {groupedLogs.map((item) => (
-            <GroupedLogComponent
-              key={
-                Array.isArray(item)
-                  ? item.map((log) => log.id).join("-")
-                  : item.id
-              }
-              item={item}
-            />
-          ))}
-          {logs.length === 0 && !logsLoading && (
+        ) : (
+          <Stack gap="lg" align="center">
+            <Card padding="xl" radius="md" withBorder>
+              <Stack gap="sm" align="center">
+                <Text size="xl" fw={700} c="blue">
+                  {logs.length}
+                </Text>
+                <Text size="lg" c="dimmed">Total Log Lines</Text>
+              </Stack>
+            </Card>
             <Text c="dimmed" ta="center">
-              No logs available
+              Select an agent from the sidebar to view their logs
             </Text>
-          )}
-        </Stack>
-        {!autoScroll && (
-          <Text size="sm" c="blue" ta="center">
-            Auto-scroll paused. Scroll to bottom to resume.
-          </Text>
+          </Stack>
         )}
       </Stack>
     );

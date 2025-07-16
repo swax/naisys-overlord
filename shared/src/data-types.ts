@@ -1,5 +1,6 @@
 import { Agent } from "./agents-types";
 import { LogEntry } from "./log-types";
+import { ThreadMessage } from "./mail-types";
 
 export interface ReadStatus {
   lastReadLogId: number;
@@ -12,14 +13,17 @@ export interface NaisysDataResponse {
   data?: {
     agents: Agent[];
     logs: LogEntry[];
+    mail: ThreadMessage[];
     timestamp: string;
     readStatus: Record<string, ReadStatus>;
   };
 }
 
 export interface NaisysDataRequest {
-  after?: string;
-  limit?: string;
+  logsAfter?: string;
+  logsLimit?: string;
+  mailAfter?: string;
+  mailLimit?: string;
 }
 
 export interface ReadStatusUpdateRequest {

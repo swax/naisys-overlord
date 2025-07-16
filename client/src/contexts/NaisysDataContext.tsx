@@ -7,15 +7,17 @@ import React, {
 } from "react";
 import { ReadStatus } from "shared";
 import { useNaisysData } from "../hooks/useNaisysData";
-import { Agent, LogEntry } from "../lib/api";
+import { Agent, LogEntry, ThreadMessage } from "../lib/api";
 
 interface NaisysDataContextType {
   allLogs: LogEntry[];
+  allMail: ThreadMessage[];
   agents: Agent[];
   isLoading: boolean;
   error: Error | null;
   readStatus: Record<string, ReadStatus>;
   getLogsForAgent: (agent?: string) => LogEntry[];
+  getMailForAgent: (agent?: string) => ThreadMessage[];
   updateReadStatus: (agentName: string, lastReadLogId: number) => Promise<void>;
 }
 
@@ -27,6 +29,7 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [allLogs, setAllLogs] = useState<LogEntry[]>([]);
+  const [allMail, setAllMail] = useState<ThreadMessage[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [readStatus, setReadStatus] = useState<Record<string, ReadStatus>>({});
   const { data: naisysResponse, isLoading, error } = useNaisysData();
@@ -58,6 +61,25 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
 
         return [...prevLogs, ...trulyNewLogs];
       });
+
+      // Update mail
+      setAllMail((prevMail) => {
+        const newMail = naisysResponse.data!.mail;
+        if (newMail.length === 0) return prevMail;
+
+        // If this is the first fetch or we're starting fresh, replace all mail
+        if (prevMail.length === 0) {
+          return newMail;
+        }
+
+        // Otherwise, append new mail that aren't already in the list
+        const maxExistingId = Math.max(...prevMail.map((mail) => mail.id), -1);
+        const trulyNewMail = newMail.filter(
+          (mail: ThreadMessage) => mail.id > maxExistingId,
+        );
+
+        return [...prevMail, ...trulyNewMail];
+      });
     }
   }, [naisysResponse]);
 
@@ -71,6 +93,21 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
       );
     };
   }, [allLogs]);
+
+  const getMailForAgent = useMemo(() => {
+    return (agent?: string): ThreadMessage[] => {
+      if (!agent) {
+        return allMail;
+      }
+      return allMail.filter(
+        (mail) =>
+          mail.username.toLowerCase() === agent.toLowerCase() ||
+          mail.members.some(
+            (member) => member.username.toLowerCase() === agent!.toLowerCase(),
+          ),
+      );
+    };
+  }, [allMail]);
 
   const updateReadStatus = async (
     agentName: string,
@@ -111,11 +148,13 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const value: NaisysDataContextType = {
     allLogs,
+    allMail,
     agents,
     isLoading,
     error,
     readStatus,
     getLogsForAgent,
+    getMailForAgent,
     updateReadStatus,
   };
 

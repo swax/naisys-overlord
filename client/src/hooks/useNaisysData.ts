@@ -1,28 +1,38 @@
 import { useQuery } from "@tanstack/react-query";
-import { useCallback, useMemo, useRef } from "react";
-import { Agent, LogEntry } from "shared";
+import { useCallback, useRef } from "react";
+import { LogEntry, ThreadMessage } from "shared";
 import { getNaisysData, NaisysDataParams } from "../lib/api";
 
 export const useNaisysData = () => {
   const lastLogIdRef = useRef<number>(-1);
+  const lastMailIdRef = useRef<number>(-1);
 
   const queryFn = useCallback(async () => {
     const params: NaisysDataParams = {
-      after: lastLogIdRef.current,
-      limit: 10000,
+      logsAfter: lastLogIdRef.current,
+      logsLimit: 10000,
+      mailAfter: lastMailIdRef.current,
+      mailLimit: 1000,
     };
 
     const response = await getNaisysData(params);
 
-    if (
-      response.success &&
-      response.data?.logs &&
-      response.data.logs.length > 0
-    ) {
-      const maxId = Math.max(
-        ...response.data.logs.map((log: LogEntry) => log.id),
-      );
-      lastLogIdRef.current = maxId;
+    if (response.success && response.data) {
+      // Update last log ID
+      if (response.data.logs && response.data.logs.length > 0) {
+        const maxLogId = Math.max(
+          ...response.data.logs.map((log: LogEntry) => log.id),
+        );
+        lastLogIdRef.current = maxLogId;
+      }
+
+      // Update last mail ID
+      if (response.data.mail && response.data.mail.length > 0) {
+        const maxMailId = Math.max(
+          ...response.data.mail.map((mail: ThreadMessage) => mail.id),
+        );
+        lastMailIdRef.current = maxMailId;
+      }
     }
 
     return response;
@@ -37,51 +47,4 @@ export const useNaisysData = () => {
     retry: 3,
     retryDelay: 1000,
   });
-};
-
-// Hook to get agents from NAISYS data
-export const useAgentsFromNaisys = () => {
-  const naisysQuery = useNaisysData();
-
-  const agents = useMemo((): Agent[] => {
-    if (!naisysQuery.data?.success || !naisysQuery.data.data?.agents) {
-      return [];
-    }
-    return naisysQuery.data.data.agents;
-  }, [naisysQuery.data]);
-
-  return {
-    data: { success: true, agents },
-    isLoading: naisysQuery.isLoading,
-    error: naisysQuery.error,
-  };
-};
-
-// Hook to get logs for a specific agent from NAISYS data
-export const useLogsFromNaisys = (agent?: string) => {
-  const naisysQuery = useNaisysData();
-
-  const filteredLogs = useMemo((): LogEntry[] => {
-    if (!naisysQuery.data?.success || !naisysQuery.data.data?.logs) {
-      return [];
-    }
-
-    const allLogs = naisysQuery.data.data.logs;
-
-    // If no agent specified, return all logs
-    if (!agent) {
-      return allLogs;
-    }
-
-    // Filter logs for the specific agent
-    return allLogs.filter(
-      (log: LogEntry) => log.username.toLowerCase() === agent.toLowerCase(),
-    );
-  }, [naisysQuery.data, agent]);
-
-  return {
-    data: { success: true, logs: filteredLogs },
-    isLoading: naisysQuery.isLoading,
-    error: naisysQuery.error,
-  };
 };

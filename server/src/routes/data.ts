@@ -17,27 +17,55 @@ export default async function dataRoutes(
     Reply: NaisysDataResponse;
   }>("/data", {}, async (request, reply) => {
     try {
-      const { after, limit } = request.query;
+      const { logsAfter, logsLimit, mailAfter, mailLimit } = request.query;
 
-      const afterId = after ? parseInt(after, 10) : undefined;
-      const limitNum = limit ? parseInt(limit, 10) : 10000;
+      const logsAfterId = logsAfter ? parseInt(logsAfter, 10) : undefined;
+      const logsLimitNum = logsLimit ? parseInt(logsLimit, 10) : 10000;
+      const mailAfterId = mailAfter ? parseInt(mailAfter, 10) : undefined;
+      const mailLimitNum = mailLimit ? parseInt(mailLimit, 10) : 1000;
 
-      if (after && isNaN(afterId!)) {
+      if (logsAfter && isNaN(logsAfterId!)) {
         return reply.status(400).send({
           success: false,
-          message: "Invalid 'after' parameter. Must be a number.",
+          message: "Invalid 'logsAfter' parameter. Must be a number.",
         });
       }
 
-      if (limit && (isNaN(limitNum) || limitNum <= 0 || limitNum > 10000)) {
+      if (
+        logsLimit &&
+        (isNaN(logsLimitNum) || logsLimitNum <= 0 || logsLimitNum > 10000)
+      ) {
         return reply.status(400).send({
           success: false,
           message:
-            "Invalid 'limit' parameter. Must be a number between 1 and 1000.",
+            "Invalid 'logsLimit' parameter. Must be a number between 1 and 10000.",
         });
       }
 
-      const data = await getNaisysData(afterId, limitNum);
+      if (mailAfter && isNaN(mailAfterId!)) {
+        return reply.status(400).send({
+          success: false,
+          message: "Invalid 'mailAfter' parameter. Must be a number.",
+        });
+      }
+
+      if (
+        mailLimit &&
+        (isNaN(mailLimitNum) || mailLimitNum <= 0 || mailLimitNum > 10000)
+      ) {
+        return reply.status(400).send({
+          success: false,
+          message:
+            "Invalid 'mailLimit' parameter. Must be a number between 1 and 10000.",
+        });
+      }
+
+      const data = await getNaisysData(
+        logsAfterId,
+        logsLimitNum,
+        mailAfterId,
+        mailLimitNum,
+      );
 
       return {
         success: true,
