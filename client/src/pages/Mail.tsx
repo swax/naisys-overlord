@@ -12,26 +12,28 @@ import {
 import { IconMailbox, IconPlus, IconSend } from "@tabler/icons-react";
 import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
+import { NewMessageModal } from "../components/NewMessageModal";
 import { useNaisysDataContext } from "../contexts/NaisysDataContext";
 import { ThreadMessage } from "../lib/api";
 
 const MailMessageComponent: React.FC<{
   message: ThreadMessage;
   currentAgent?: string;
-}> = ({ message, currentAgent }) => {
+  agents: any[];
+}> = ({ message, currentAgent, agents }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isFromCurrentAgent = currentAgent && message.username === currentAgent;
   const membersExcludingSender = message.members.filter(
     (member) => member.username !== message.username,
   );
 
-  const displayName = isFromCurrentAgent
-    ? membersExcludingSender.map((m) => m.username).join(", ") || "Unknown"
-    : message.username;
-
+  const messageWithSubject = `${message.subject} - ${message.message}`;
   const hasMoreContent =
-    message.message.includes("\n") || message.message.length > 100;
-  const displayText = isExpanded ? message.message : message.message;
+    messageWithSubject.includes("\n") || messageWithSubject.length > 100;
+
+  const fromToUsernames = isFromCurrentAgent
+    ? membersExcludingSender.map((m) => m.username) || ["Unknown"]
+    : [message.username];
 
   return (
     <Card
@@ -59,16 +61,29 @@ const MailMessageComponent: React.FC<{
                 <IconMailbox size={16} />
               )}
             </ActionIcon>
-            <Text
-              size="sm"
-              fw={500}
-              style={{ minWidth: "80px", flexShrink: 0 }}
-            >
-              {displayName}
-            </Text>
-            <Text size="sm" fw={600} style={{ flex: 1, minWidth: 0 }}>
-              {message.subject}
-            </Text>
+            <Group gap="xs" align="baseline" style={{ minWidth: "80px", flexShrink: 0 }}>
+              <Text size="xs" c="dimmed" fw={400} style={{ flexShrink: 0 }}>
+                {isFromCurrentAgent ? "To:" : "From:"}
+              </Text>
+              <Group gap="xs" align="baseline" style={{ flexWrap: "wrap" }}>
+                {fromToUsernames.map((username, index) => {
+                  const agent = agents.find((a) => a.name === username);
+                  return (
+                    <React.Fragment key={username}>
+                      {index > 0 && <Text size="sm" c="dimmed">,</Text>}
+                      <Text size="sm" fw={600}>
+                        {username}
+                      </Text>
+                      {agent?.title && (
+                        <Text size="xs" c="dimmed" fw={400}>
+                          ({agent.title})
+                        </Text>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </Group>
+            </Group>
           </Flex>
           <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
             {new Date(message.date).toLocaleDateString("en-US", {
@@ -91,7 +106,10 @@ const MailMessageComponent: React.FC<{
           }}
           c={isExpanded ? undefined : "dimmed"}
         >
-          {displayText}
+          <Text component="span" fw={600} c="white">
+            {message.subject}
+          </Text>{" "}
+          - {message.message}
         </Text>
       </Stack>
     </Card>
@@ -110,6 +128,7 @@ export const Mail: React.FC = () => {
 
   const [showSent, setShowSent] = useState(false);
   const [showReceived, setShowReceived] = useState(false);
+  const [newMessageModalOpened, setNewMessageModalOpened] = useState(false);
   const lastReadMailIdRef = useRef<Record<string, number>>({});
 
   // Get filtered mail for the current agent
@@ -165,6 +184,22 @@ export const Mail: React.FC = () => {
   const receivedCount = allMail.filter((mail) => {
     return mail.username !== agentParam;
   }).length;
+
+  // Handle sending a new message
+  const handleSendMessage = async (
+    recipient: string,
+    subject: string,
+    body: string,
+  ): Promise<void> => {
+    // TODO: Implement actual message sending API call
+    console.log("Sending message:", {
+      recipient,
+      subject,
+      body,
+      from: agentParam,
+    });
+    // For now, just close the modal - will implement API call in next step
+  };
 
   if (mailLoading) {
     return <Loader size="lg" />;
@@ -230,6 +265,7 @@ export const Mail: React.FC = () => {
           variant="outline"
           size="xs"
           leftSection={<IconPlus size={16} />}
+          onClick={() => setNewMessageModalOpened(true)}
         >
           New Message
         </Button>
@@ -274,6 +310,7 @@ export const Mail: React.FC = () => {
             key={message.id}
             message={message}
             currentAgent={agentParam}
+            agents={agents}
           />
         ))}
         {filteredMail.length === 0 && !mailLoading && (
@@ -282,6 +319,14 @@ export const Mail: React.FC = () => {
           </Text>
         )}
       </Stack>
+
+      <NewMessageModal
+        opened={newMessageModalOpened}
+        onClose={() => setNewMessageModalOpened(false)}
+        agents={agents}
+        currentAgentName={agentParam}
+        onSend={handleSendMessage}
+      />
     </Stack>
   );
 };

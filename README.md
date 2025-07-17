@@ -1,110 +1,93 @@
-# Full Stack TypeScript Application
+# NAISYS Overlord
 
-A modern full-stack application using Node.js/Fastify for the backend and React/Vite for the frontend, all with TypeScript support.
+A management application for NAISYS agents that provides a monitoring interface and communication capabilities. NAISYS Overlord sits above the NAISYS database to provide visibility into how agents are working and enables communication with the agents.
 
-## Tech Stack
+## Overview
 
-### Backend
+NAISYS Overlord is a full-stack TypeScript application that consists of:
+- **Frontend**: React application with Mantine UI components
+- **Backend**: Fastify server with SQLite databases
+- **Shared**: Common types and utilities
 
-- **Node.js** with **TypeScript**
-- **Fastify** web framework
-- **CORS** support
-- Hot reload during development
+The application provides a web interface to monitor NAISYS agents, view their logs, manage mail/messaging, and control agent operations.
 
-### Frontend
+## Quick Start
 
-- **React 18** with **TypeScript**
-- **Vite** build tool
-- **React Router** for routing
-- **TanStack Query** for API calls
-- Hot reload during development
+### Prerequisites
+- Node.js 18.0.0 or higher
+- NPM or compatible package manager
+- Access to a NAISYS database
 
-## Project Structure
+### Installation
 
-```
-├── server/           # Backend API
-│   ├── src/
-│   │   ├── routes/   # API routes
-│   │   └── server.ts # Main server file
-│   ├── dist/         # Compiled JavaScript (production)
-│   └── package.json
-├── client/           # Frontend React app
-│   ├── src/
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── hooks/
-│   │   └── lib/
-│   ├── dist/         # Built static files (production)
-│   └── package.json
-└── package.json      # Root workspace configuration
-```
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm run install:all
+   ```
+
+3. Set up environment variables:
+   ```bash
+   export NAISYS_FOLDER_PATH=/path/to/naisys/data
+   export OVERLORD_DB_PATH=/path/to/overlord.db  # Optional
+   ```
+
+4. Start development servers:
+   ```bash
+   npm run dev
+   ```
+
+The application will be available at `http://localhost:5173` (development) or `http://localhost:3001/overlord/` (production).
+
+## Architecture
+
+### Database Architecture
+The application uses a dual database system:
+
+- **NAISYS Database** (Read-only): Contains agent data, logs, and messaging
+- **Overlord Database** (Read/Write): Manages sessions, settings, and read status
+
+### Core Features
+
+- **Agent Monitoring**: View agent status, activity, and hierarchical relationships
+- **Log Viewing**: Browse system logs with pagination and filtering
+- **Mail System**: Inter-agent messaging with thread-based conversations
+- **Session Management**: Authentication and access control
+- **Read Status Tracking**: Track unread notifications per agent
 
 ## Development
 
-### Prerequisites
+### Available Scripts
 
-- Node.js 18+
-- npm
+- `npm run dev` - Start development servers
+- `npm run build` - Build all packages
+- `npm start` - Start production server
+- `npm run format` - Format code with Prettier
 
-### Setup
+### Project Structure
 
-```bash
-# Install all dependencies
-npm run install:all
-
-# Start development servers (both frontend and backend)
-npm run dev
+```
+├── client/          # React frontend
+├── server/          # Fastify backend
+├── shared/          # Shared TypeScript types
+└── naisys-db-schema.ts  # Database schema definitions
 ```
 
-This will start:
+### Environment Variables
 
-- Backend server on http://localhost:3001
-- Frontend dev server on http://localhost:5173
-- Frontend proxies `/api/*` requests to backend
-
-### Individual Development
-
-```bash
-# Backend only
-npm run dev --workspace=server
-
-# Frontend only
-npm run dev --workspace=client
-```
-
-## Production
-
-### Build
-
-```bash
-# Build both frontend and backend
-npm run build
-```
-
-### Deploy
-
-```bash
-# Start production server (serves both API and built React app)
-npm start
-```
-
-The production server:
-
-- Serves the React app as static files
-- Handles API routes under `/api/*`
-- Runs on a single port (default: 3001)
+- `NAISYS_FOLDER_PATH` - Path to NAISYS data folder (required)
+- `OVERLORD_DB_PATH` - Path to overlord database (optional)
+- `NODE_ENV` - Environment mode (development/production)
+- `PORT` - Server port (defaults to 3001)
 
 ## API Endpoints
 
-- `GET /api/hello` - Returns a hello world message with timestamp
+- `GET /api/data` - Main data endpoint with pagination
+- `POST /api/access-key` - Access key validation
+- `GET /api/session` - Session validation
+- `POST /api/settings` - Settings management
+- `POST /api/read-status` - Update read status
 
-## Features
+## License
 
-- ✅ TypeScript throughout the stack
-- ✅ Hot reload in development
-- ✅ Single server deployment in production
-- ✅ API proxy during development
-- ✅ React Router for SPA routing
-- ✅ TanStack Query for server state
-- ✅ CORS configured for development
-- ✅ Static file serving in production
+This project is open source. MIT license.

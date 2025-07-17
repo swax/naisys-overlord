@@ -4,148 +4,96 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Development Commands
 
-### Essential Commands
+### Building and Running
+- `npm run dev` - Start development servers (both client and server)
+- `npm run build` - Build all packages (shared, client, server)
+- `npm start` - Start production server
+- `npm run format` - Format code with Prettier
 
-```bash
-# Install all dependencies across workspaces
-npm run install:all
+### Individual Package Commands
+- `npm run dev --workspace=server` - Start server only
+- `npm run dev --workspace=client` - Start client only
+- `npm run build --workspace=shared` - Build shared types
+- `npm run type-check --workspace=client` - TypeScript check for client
+- `npm run type-check --workspace=server` - TypeScript check for server
 
-# Start both frontend and backend development servers
-npm run dev
-
-# Build entire application for production
-npm run build
-
-# Start production server (serves both API and React app)
-npm start
-```
-
-### Workspace-Specific Commands
-
-```bash
-# Backend only (TypeScript with hot reload)
-npm run dev --workspace=server
-
-# Frontend only (Vite dev server)
-npm run dev --workspace=client
-
-# Type checking
-npm run type-check --workspace=server
-npm run type-check --workspace=client
-
-# Build server TypeScript to JavaScript
-npm run build --workspace=server
-
-# Build React app to static files
-npm run build --workspace=client
-```
+### Testing
+No test framework is currently configured. When adding tests, check if the project uses Jest, Vitest, or another framework.
 
 ## Architecture Overview
 
-### Monorepo Structure
+### High-Level Structure
+NAISYS Overlord is a management application that provides a monitoring interface for NAISYS agents. It operates above the NAISYS database to provide visibility into agent operations and enable communication with agents.
 
-This is a TypeScript monorepo using npm workspaces with three main packages:
+### Workspace Structure
+- `shared/` - TypeScript types and utilities shared between client and server
+- `client/` - React frontend using Vite, Mantine UI, and React Query
+- `server/` - Fastify backend with TypeScript
+- `naisys-db-schema.ts` - Database schema definitions for NAISYS system
 
-- `server/` - Fastify backend API with SQLite database
-- `client/` - React frontend with Vite and Mantine UI
-- `shared/` - TypeScript interfaces shared between frontend and backend
+### Database Architecture (Dual Database System)
+The application uses two separate databases:
 
-### Development vs Production Architecture
+1. **NAISYS Database** (Read-only)
+   - Location: `{NAISYS_FOLDER_PATH}/database/naisys.sqlite`
+   - Contains: Agent data, logs, mail/messaging system
+   - Tables: `Users`, `ContextLog`, `ThreadMessages`, `Threads`, `ThreadMembers`
+   - Accessed via: `server/src/database/naisysDatabase.ts`
 
-**Development Mode:**
+2. **Overlord Database** (Read/Write)
+   - Location: `{OVERLORD_DB_PATH}` or `./overlord.db`
+   - Contains: Session management, settings, read status tracking
+   - Tables: `sessions`, `settings`
+   - Accessed via: `server/src/database/overlordDatabase.ts`
 
-- Backend runs on `localhost:3001` using `tsx watch` for hot reload
-- Frontend runs on `localhost:5173` using Vite dev server
-- Vite proxies `/api/*` requests to backend via `vite.config.ts`
-- CORS enabled for cross-origin requests
+### Core Services Layer
+Located in `server/src/services/`, each service has a specific responsibility:
 
-**Production Mode:**
+- **dataService.ts** - Main data aggregation orchestrator, combines data from all services
+- **agentService.ts** - Agent/user management with online status detection
+- **logService.ts** - System logging and activity tracking with pagination
+- **mailService.ts** - Inter-agent messaging system with thread-based messaging
+- **sessionService.ts** - Authentication and session management
+- **readService.ts** - Tracks read/unread status for logs and mail per agent
+- **settingsService.ts** - Application configuration management
 
-- Single Fastify server serves both API and static React files
-- Client builds to `client/dist/` static files
-- Server serves React app from `server/src/server.ts:30-45`
-- SPA routing handled via catch-all handler (`server/src/server.ts:37-45`)
+### API Structure
+Routes are organized in `server/src/routes/`:
+- `/api/data` - Main data endpoint with pagination support
+- `/api/access-key` - Access key validation and session creation
+- `/api/session` - Session validation
+- `/api/settings` - Application settings management
+- `/api/read-status` - Update read status for agents
 
-### Key Integration Points
+### Frontend Architecture
+- **React** with TypeScript and **Mantine UI** components
+- **React Query** for data fetching and caching
+- **React Router** for navigation
+- **Context API** for global state management (`NaisysDataContext`)
+- Layout: AppShell with header, navbar (agent sidebar), footer (navigation), and main content
 
-1. **API Communication**: Frontend uses centralized API client in `client/src/lib/api.ts` with shared TypeScript interfaces from `shared/`
-2. **State Management**: TanStack Query handles server state, configured in `client/src/lib/queryClient.ts`
-3. **Routing**: React Router provides SPA routing with `/overlord` basename, with backend catch-all ensuring client-side routes work in production
-4. **Static Serving**: In production, Fastify serves client build files under `/overlord/` while preserving API routes under `/api/*`
+### Key Architectural Patterns
+1. **Separation of Concerns**: Clear distinction between NAISYS system data (read-only) and overlord state (read/write)
+2. **Service Layer Pattern**: Services abstract database operations from routes
+3. **Parallel Data Fetching**: Services use `Promise.all()` for efficient concurrent data retrieval
+4. **Read Status Tracking**: Sophisticated system for tracking unread notifications per agent
+5. **Session Management**: Cookie-based sessions with automatic cleanup
 
-### Authentication & Sessions
+### Environment Variables
+- `NAISYS_FOLDER_PATH` - Path to NAISYS data folder (required)
+- `OVERLORD_DB_PATH` - Path to overlord database (optional, defaults to `./overlord.db`)
+- `NODE_ENV` - Environment mode (development/production)
+- `PORT` - Server port (defaults to 3001)
 
-- Access key-based authentication with HTTP-only cookie sessions
-- SQLite database stores sessions with 30-day expiration
-- Session validation middleware in `server/src/routes/access.ts:validateSession`
-- Environment variable `ACCESS_KEY` required for authentication
+### Important Code Patterns
+- All database operations use Promise-based wrappers with proper error handling
+- Services return typed data structures defined in `shared/src/`
+- Read status updates are automatically triggered by data fetching operations
+- Agent online status is determined by activity within last 5 seconds
+- All API endpoints that modify data require session authentication
 
-### Database Architecture
-
-- **Modular Service Layer**: Database operations separated into functional modules:
-  - `server/src/services/database.ts` - SQLite connection and table initialization
-  - `server/src/services/sessionService.ts` - Session CRUD operations
-  - `server/src/services/settingsService.ts` - Settings persistence
-- **Service Pattern**: Services are functional modules that import the shared database connection
-- **API Layer**: Routes import specific functions from service modules (e.g., `createSession`, `getSettings`)
-
-### TypeScript Setup
-
-- Server uses ES modules with `tsx` for development and `tsc` for production builds
-- Client uses Vite's TypeScript support with strict type checking
-- Shared response interfaces between frontend and backend via `shared/` workspace
-
-### Environment Handling
-
-- `NODE_ENV=production` switches server to production mode (static file serving, different CORS)
-- Port configured via `PORT` environment variable (defaults to 3001)
-- Host binding: `localhost` in development, `0.0.0.0` in production
-- Database path configurable via `OVERLORD_DB_PATH` (defaults to `./overlord.db`)
-
-## Apache Reverse Proxy Setup
-
-This application is configured to run under the `/overlord/` path when using an Apache reverse proxy.
-
-### Apache Configuration
-
-```apache
-ProxyPass /overlord/ http://localhost:3001/
-ProxyPassReverse /overlord/ http://localhost:3001/
-ProxyPreserveHost On
-```
-
-### Required Apache Modules
-
-```bash
-sudo a2enmod proxy proxy_http headers
-```
-
-### Application Configuration
-
-- Vite base path set to `/overlord/` in `client/vite.config.ts`
-- React Router basename set to `/overlord` in `client/src/App.tsx`
-- All static assets and API calls work correctly under the proxied path
-
-## UI Framework & Design System
-
-### Mantine UI Components
-
-- Primary UI framework: Mantine v8 with dark theme default
-- Key components: `AppShell`, `ActionIcon`, `Card`, `Badge`, `Group`, `Stack`
-- Navigation: Bottom footer navigation with 3 main sections (Log, Mail, Controls)
-- Sidebar: Agent selection with status indicators (active, busy, idle, system)
-
-### Agent-Based Navigation
-
-- Multi-agent system UI with agent-specific routing patterns:
-  - `/controls` or `/controls/:agent` - Agent control interface
-  - `/log` or `/log/:agent` - Agent activity logs
-  - `/mail` or `/mail/:agent` or `/mail/:agent/:messageId` - Agent communication
-- "All" agent view shows aggregated data across all agents
-- URL structure preserves current agent when switching between sections
-
-### Authentication UI
-
-- Lock icon in header indicates authentication status (locked/unlocked)
-- Modal dialogs for access key entry and settings management
-- Session persistence with automatic session validation on app load
+### Development Notes
+- The application serves the React client from `/overlord/` prefix in production
+- CORS is configured for development (http://localhost:5173)
+- Database connections are opened/closed per query for simplicity
+- Session cleanup happens automatically when expired sessions are accessed
