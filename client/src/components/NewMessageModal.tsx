@@ -9,14 +9,14 @@ import {
   Textarea,
 } from "@mantine/core";
 import React, { useState, useEffect } from "react";
-import { Agent } from "../lib/api";
+import { Agent } from "../lib/apiClient";
 
 interface NewMessageModalProps {
   opened: boolean;
   onClose: () => void;
   agents: Agent[];
   currentAgentName: string;
-  onSend: (recipient: string, subject: string, body: string) => Promise<void>;
+  onSend: (sender: string, recipient: string, subject: string, body: string) => Promise<void>;
 }
 
 export const NewMessageModal: React.FC<NewMessageModalProps> = ({
@@ -53,7 +53,7 @@ export const NewMessageModal: React.FC<NewMessageModalProps> = ({
 
     setIsLoading(true);
     try {
-      await onSend(recipient, subject, body);
+      await onSend(sender, recipient, subject, body);
       setSender(currentAgentName);
       setRecipient("");
       setSubject("");

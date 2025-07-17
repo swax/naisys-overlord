@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { api, apiEndpoints, HelloResponse } from "../lib/api";
+import { api, apiEndpoints, HelloResponse } from "../lib/apiClient";
 
 export function useHello() {
   return useQuery<HelloResponse, Error>({

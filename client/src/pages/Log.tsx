@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Text, Stack, Group, Loader, Alert, Card } from "@mantine/core";
 import { useParams } from "react-router-dom";
 import { useNaisysDataContext } from "../contexts/NaisysDataContext";
-import { LogEntry } from "../lib/api";
+import { LogEntry } from "../lib/apiClient";
 
 const getLogColor = (log: LogEntry) => {
   if (log.type === "comment") return "green";

@@ -1,4 +1,4 @@
-import { ThreadMessage, ThreadMember } from "shared/src/mail-types.js";
+import { ThreadMessage, ThreadMember, SendMailRequest, SendMailResponse } from "shared/src/mail-types.js";
 import { runNaisysDbCommand } from "../database/naisysDatabase.js";
 import { updateLatestMailIds } from "./readService.js";
 
@@ -135,5 +135,38 @@ async function getThreadMembersMap(
   } catch (error) {
     console.error("Error fetching thread members from Naisys database:", error);
     return {};
+  }
+}
+
+export async function sendMessage(
+  request: SendMailRequest,
+): Promise<SendMailResponse> {
+  try {
+    // TODO: Implement actual message sending logic
+    // This should:
+    // 1. Validate the 'from' user exists
+    // 2. Validate the 'to' user exists
+    // 3. Create or find existing thread between users
+    // 4. Insert new message into ThreadMessages table
+    // 5. Update ThreadMembers table
+    // 6. Return success response with messageId
+    
+    console.log(`Sending message from ${request.from} to ${request.to}:`, {
+      subject: request.subject,
+      message: request.message,
+    });
+    
+    // For now, return a stub response
+    return {
+      success: true,
+      message: "Message sending not yet implemented",
+      messageId: -1,
+    };
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "Failed to send message",
+    };
   }
 }

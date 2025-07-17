@@ -15,3 +15,16 @@ export interface ThreadMember {
   newMsgId: number;
   archived: boolean;
 }
+
+export interface SendMailRequest {
+  from: string;
+  to: string;
+  subject: string;
+  message: string;
+}
+
+export interface SendMailResponse {
+  success: boolean;
+  message?: string;
+  messageId?: number;
+}

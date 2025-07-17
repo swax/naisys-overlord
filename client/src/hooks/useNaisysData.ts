@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useRef } from "react";
 import { LogEntry, ThreadMessage } from "shared";
-import { getNaisysData, NaisysDataParams } from "../lib/api";
+import { getNaisysData, NaisysDataParams } from "../lib/apiClient";
 
 export const useNaisysData = () => {
   const lastLogIdRef = useRef<number>(-1);

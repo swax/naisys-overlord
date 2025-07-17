@@ -14,7 +14,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams } from "react-router-dom";
 import { NewMessageModal } from "../components/NewMessageModal";
 import { useNaisysDataContext } from "../contexts/NaisysDataContext";
-import { ThreadMessage } from "../lib/api";
+import { ThreadMessage, sendMail } from "../lib/apiClient";
 
 const MailMessageComponent: React.FC<{
   message: ThreadMessage;
@@ -129,6 +129,7 @@ export const Mail: React.FC = () => {
   const [showSent, setShowSent] = useState(false);
   const [showReceived, setShowReceived] = useState(false);
   const [newMessageModalOpened, setNewMessageModalOpened] = useState(false);
+  const [sendStatus, setSendStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const lastReadMailIdRef = useRef<Record<string, number>>({});
 
   // Get filtered mail for the current agent
@@ -187,18 +188,37 @@ export const Mail: React.FC = () => {
 
   // Handle sending a new message
   const handleSendMessage = async (
+    sender: string,
     recipient: string,
     subject: string,
     body: string,
   ): Promise<void> => {
-    // TODO: Implement actual message sending API call
-    console.log("Sending message:", {
-      recipient,
-      subject,
-      body,
-      from: agentParam,
-    });
-    // For now, just close the modal - will implement API call in next step
+    try {
+      const response = await sendMail({
+        from: sender,
+        to: recipient,
+        subject,
+        message: body,
+      });
+
+      if (response.success) {
+        setSendStatus({
+          type: 'success',
+          message: 'Message sent successfully!'
+        });
+        // TODO: Optionally refresh data to show the sent message
+      } else {
+        setSendStatus({
+          type: 'error',
+          message: response.message || 'Failed to send message'
+        });
+      }
+    } catch (error) {
+      setSendStatus({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Error sending message'
+      });
+    }
   };
 
   if (mailLoading) {
@@ -294,6 +314,17 @@ export const Mail: React.FC = () => {
           {mailError instanceof Error
             ? mailError.message
             : "Failed to load mail"}
+        </Alert>
+      )}
+
+      {sendStatus && (
+        <Alert 
+          color={sendStatus.type === 'success' ? 'green' : 'red'} 
+          title={sendStatus.type === 'success' ? 'Success' : 'Error'}
+          onClose={() => setSendStatus(null)}
+          withCloseButton
+        >
+          {sendStatus.message}
         </Alert>
       )}
 

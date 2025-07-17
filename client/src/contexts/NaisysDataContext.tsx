@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { ReadStatus } from "shared";
 import { useNaisysData } from "../hooks/useNaisysData";
-import { Agent, LogEntry, ThreadMessage } from "../lib/api";
+import { Agent, LogEntry, ThreadMessage } from "../lib/apiClient";
 
 interface NaisysDataContextType {
   allLogs: LogEntry[];

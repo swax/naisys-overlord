@@ -9,6 +9,8 @@ import type {
   NaisysDataResponse,
   NaisysDataRequest,
   ThreadMessage,
+  SendMailRequest,
+  SendMailResponse,
 } from "shared";
 
 const API_BASE = "/api";
@@ -37,6 +39,8 @@ export type {
   NaisysDataResponse,
   NaisysDataRequest,
   ThreadMessage,
+  SendMailRequest,
+  SendMailResponse,
 };
 
 export const api = {
@@ -71,6 +75,7 @@ export const apiEndpoints = {
   logout: "/logout",
   settings: "/settings",
   data: "/data",
+  sendMail: "/send-mail",
 };
 
 export const checkSession = async (): Promise<SessionResponse> => {
@@ -149,4 +154,21 @@ export const getNaisysData = async (
     : apiEndpoints.data;
 
   return await api.get<NaisysDataResponse>(url);
+};
+
+export const sendMail = async (
+  mailData: SendMailRequest,
+): Promise<SendMailResponse> => {
+  try {
+    return await api.post<SendMailRequest, SendMailResponse>(
+      apiEndpoints.sendMail,
+      mailData,
+    );
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to send mail",
+    };
+  }
 };

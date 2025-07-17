@@ -8,7 +8,7 @@ import {
   Group,
   Button,
 } from "@mantine/core";
-import { getSettings, saveSettings } from "../lib/api";
+import { getSettings, saveSettings } from "../lib/apiClient";
 
 interface SettingsDialogProps {
   opened: boolean;
