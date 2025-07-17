@@ -5,6 +5,8 @@ import { ThreadMessage } from "./mail-types";
 export interface ReadStatus {
   lastReadLogId: number;
   latestLogId: number;
+  lastReadMailId: number;
+  latestMailId: number;
 }
 
 export interface NaisysDataResponse {
@@ -28,7 +30,8 @@ export interface NaisysDataRequest {
 
 export interface ReadStatusUpdateRequest {
   agentName: string;
-  lastReadLogId: number;
+  lastReadLogId?: number;
+  lastReadMailId?: number;
 }
 
 export interface ReadStatusUpdateResponse {

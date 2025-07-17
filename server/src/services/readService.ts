@@ -1,6 +1,15 @@
-import { LogEntry, ReadStatus } from "shared";
+import { LogEntry, ReadStatus, ThreadMessage } from "shared";
 import { runOverlordDbCommand } from "../database/overlordDatabase";
 import { SettingsRecord } from "./settingsService";
+
+function createDefaultReadStatus(): ReadStatus {
+  return {
+    lastReadLogId: -1,
+    latestLogId: -1,
+    lastReadMailId: -1,
+    latestMailId: -1,
+  };
+}
 
 export async function getReadStatus(): Promise<Record<string, ReadStatus>> {
   const settingsRecords = await runOverlordDbCommand<SettingsRecord[] | null>(`
@@ -29,7 +38,7 @@ async function saveReadStatus(
   );
 }
 
-export async function updateLatestReadLogId(
+export async function updateLastReadLogId(
   agentName: string,
   lastReadLogId: number,
 ): Promise<void> {
@@ -37,16 +46,12 @@ export async function updateLatestReadLogId(
 
   // Update the read status for this user and agent
   if (!readStatusByAgent[agentName]) {
-    readStatusByAgent[agentName] = {
-      lastReadLogId: -1,
-      latestLogId: -1,
-    };
+    readStatusByAgent[agentName] = createDefaultReadStatus();
   }
 
   const readStatus = readStatusByAgent[agentName];
-  if (readStatus.lastReadLogId < lastReadLogId) {
-    readStatus.lastReadLogId = lastReadLogId;
-  }
+
+  readStatus.lastReadLogId = Math.max(readStatus.lastReadLogId, lastReadLogId);
 
   // Save back to database
   return await saveReadStatus(readStatusByAgent);
@@ -58,16 +63,58 @@ export async function updateLatestLogIds(logs: LogEntry[]): Promise<void> {
   // Update latest log ids for each agent
   logs.forEach((log) => {
     if (!readStatusByAgent[log.username]) {
-      readStatusByAgent[log.username] = {
-        lastReadLogId: -1,
-        latestLogId: log.id,
-      };
+      readStatusByAgent[log.username] = createDefaultReadStatus();
     }
 
     const readStatus = readStatusByAgent[log.username];
-    if (readStatus.latestLogId < log.id) {
-      readStatus.latestLogId = log.id;
-    }
+
+    readStatus.latestLogId = Math.max(readStatus.latestLogId, log.id);
+  });
+
+  // Save back to database
+  return await saveReadStatus(readStatusByAgent);
+}
+
+export async function updateLastReadMailId(
+  agentName: string,
+  lastReadMailId: number,
+): Promise<void> {
+  let readStatusByAgent = await getReadStatus();
+
+  // Update the read status for this user and agent
+  if (!readStatusByAgent[agentName]) {
+    readStatusByAgent[agentName] = createDefaultReadStatus();
+  }
+
+  const readStatus = readStatusByAgent[agentName];
+
+  readStatus.lastReadMailId = Math.max(
+    readStatus.lastReadMailId,
+    lastReadMailId,
+  );
+
+  // Save back to database
+  return await saveReadStatus(readStatusByAgent);
+}
+
+export async function updateLatestMailIds(
+  mail: ThreadMessage[],
+): Promise<void> {
+  let readStatusByAgent = await getReadStatus();
+
+  // Update latest *received* mail ids for each agent
+  mail.forEach((msg) => {
+    // For each receiving user in members that is not the sender
+    msg.members.forEach((member) => {
+      if (member.username !== msg.username) {
+        if (!readStatusByAgent[member.username]) {
+          readStatusByAgent[member.username] = createDefaultReadStatus();
+        }
+
+        const readStatus = readStatusByAgent[member.username];
+        readStatus.latestMailId = Math.max(readStatus.latestMailId, msg.id);
+      }
+    });
   });
 
   // Save back to database

@@ -123,7 +123,7 @@ export const Log: React.FC = () => {
         updateReadStatus(agentParam, latestLogId);
       }
     }
-  }, [logs.length]);
+  }, [logs, agentParam, updateReadStatus]);
 
   // Auto-scroll to bottom when new logs arrive
   useEffect(() => {
@@ -169,7 +169,7 @@ export const Log: React.FC = () => {
               : "Failed to load logs"}
           </Alert>
         )}
-        
+
         {logsLoading ? (
           <Group justify="center">
             <Loader size="md" />
@@ -182,7 +182,9 @@ export const Log: React.FC = () => {
                 <Text size="xl" fw={700} c="blue">
                   {logs.length}
                 </Text>
-                <Text size="lg" c="dimmed">Total Log Lines</Text>
+                <Text size="lg" c="dimmed">
+                  Total Log Lines
+                </Text>
               </Stack>
             </Card>
             <Text c="dimmed" ta="center">
@@ -194,9 +196,7 @@ export const Log: React.FC = () => {
     );
   }
 
-  const agent = agents.find(
-    (a) => a.name.toLowerCase() === agentParam.toLowerCase(),
-  );
+  const agent = agents.find((a) => a.name === agentParam);
 
   if (!agent) {
     return (

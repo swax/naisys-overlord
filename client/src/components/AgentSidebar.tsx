@@ -1,5 +1,5 @@
 import { Badge, Card, Group, Stack, Text, Tooltip } from "@mantine/core";
-import { IconFileText, IconRobot } from "@tabler/icons-react";
+import { IconFileText, IconMail, IconRobot } from "@tabler/icons-react";
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Agent } from "shared";
@@ -12,17 +12,17 @@ export const AgentSidebar: React.FC = () => {
 
   const isAgentSelected = (agentName: string) => {
     const pathParts = location.pathname.split("/");
-    if (agentName.toLowerCase() === "all") {
+    if (agentName === "all") {
       return !pathParts[2];
     }
-    return pathParts[2]?.toLowerCase() === agentName.toLowerCase();
+    return pathParts[2] === agentName;
   };
 
   const getCurrentSection = () => location.pathname.split("/")[1];
 
   const handleAgentClick = (agent: Agent) => {
     const currentSection = getCurrentSection();
-    if (agent.name.toLowerCase() === "all") {
+    if (agent.name === "all") {
       if (
         currentSection &&
         ["log", "mail", "controls"].includes(currentSection)
@@ -36,9 +36,9 @@ export const AgentSidebar: React.FC = () => {
         currentSection &&
         ["log", "mail", "controls"].includes(currentSection)
       ) {
-        navigate(`/${currentSection}/${agent.name.toLowerCase()}`);
+        navigate(`/${currentSection}/${agent.name}`);
       } else {
-        navigate(`/controls/${agent.name.toLowerCase()}`);
+        navigate(`/controls/${agent.name}`);
       }
     }
   };
@@ -98,8 +98,8 @@ export const AgentSidebar: React.FC = () => {
     return organizedAgents;
   };
 
-  const getUnreadBadge = (agent: Agent) => {
-    const agentReadStatus = readStatus[agent.name.toLowerCase()];
+  const getUnreadLogBadge = (agent: Agent) => {
+    const agentReadStatus = readStatus[agent.name];
     if (
       !agentReadStatus ||
       agentReadStatus.latestLogId <= agentReadStatus.lastReadLogId
@@ -114,7 +114,7 @@ export const AgentSidebar: React.FC = () => {
         <Badge
           size="xs"
           variant="filled"
-          color="blue"
+          color="purple"
           p={0}
           pl={1}
           pt={3}
@@ -122,6 +122,35 @@ export const AgentSidebar: React.FC = () => {
           h={20}
         >
           <IconFileText size="0.8rem" />
+        </Badge>
+      </Tooltip>
+    );
+  };
+
+  const getUnreadMailBadge = (agent: Agent) => {
+    const agentReadStatus = readStatus[agent.name];
+    if (
+      !agentReadStatus ||
+      agentReadStatus.latestMailId <= agentReadStatus.lastReadMailId
+    ) {
+      return null;
+    }
+
+    return (
+      <Tooltip
+        label={`Latest: ${agentReadStatus.latestMailId}\nLast read: ${agentReadStatus.lastReadMailId}`}
+      >
+        <Badge
+          size="xs"
+          variant="filled"
+          color="blue"
+          p={0}
+          pl={0}
+          pt={3}
+          w={20}
+          h={20}
+        >
+          <IconMail size="0.8rem" />
         </Badge>
       </Tooltip>
     );
@@ -156,7 +185,8 @@ export const AgentSidebar: React.FC = () => {
                   <Text size="sm" fw={500}>
                     {agent.name}
                   </Text>
-                  {getUnreadBadge(agent)}
+                  {getUnreadLogBadge(agent)}
+                  {getUnreadMailBadge(agent)}
                 </Group>
                 <Text size="xs" c="dimmed">
                   {agent.title}

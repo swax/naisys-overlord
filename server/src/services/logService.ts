@@ -54,7 +54,7 @@ export async function getLogs(
     }));
 
     // Used for tracking unread logs
-    updateLatestLogIds(logs);
+    await updateLatestLogIds(logs);
 
     return logs;
   } catch (error) {

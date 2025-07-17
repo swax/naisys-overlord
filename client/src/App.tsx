@@ -106,10 +106,10 @@ const AppContent: React.FC = () => {
               hiddenFrom="sm"
               size="sm"
             />
-            <img 
-              src="/overlord/apple-touch-icon.png" 
-              alt="NAISYS Overlord" 
-              style={{ width: '48px', height: '48px' }}
+            <img
+              src="/overlord/apple-touch-icon.png"
+              alt="NAISYS Overlord"
+              style={{ width: "48px", height: "48px" }}
             />
             <Text size="lg" fw={500}>
               NAISYS Overlord

@@ -5,7 +5,10 @@ import {
   ReadStatusUpdateRequest,
 } from "shared/src/data-types.js";
 import { getNaisysData } from "../services/dataService.js";
-import { updateLatestReadLogId } from "../services/readService.js";
+import {
+  updateLastReadLogId,
+  updateLastReadMailId,
+} from "../services/readService.js";
 import { validateSession } from "./access.js";
 
 export default async function dataRoutes(
@@ -91,9 +94,14 @@ export default async function dataRoutes(
     },
     async (request, reply) => {
       try {
-        const { agentName, lastReadLogId } = request.body;
+        const { agentName, lastReadLogId, lastReadMailId } = request.body;
 
-        await updateLatestReadLogId(agentName, lastReadLogId);
+        if (lastReadLogId !== undefined) {
+          await updateLastReadLogId(agentName, lastReadLogId);
+        }
+        if (lastReadMailId !== undefined) {
+          await updateLastReadMailId(agentName, lastReadMailId);
+        }
 
         return {
           success: true,

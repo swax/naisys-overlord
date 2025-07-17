@@ -1,5 +1,6 @@
 import { ThreadMessage, ThreadMember } from "shared/src/mail-types.js";
 import { runNaisysDbCommand } from "../database/naisysDatabase.js";
+import { updateLatestMailIds } from "./readService.js";
 
 interface NaisysThreadMessage {
   id: number;
@@ -77,6 +78,9 @@ export async function getThreadMessages(
       date: msg.date,
       members: membersMap[msg.threadId] || [],
     }));
+
+    // Used for tracking unread mails
+    await updateLatestMailIds(messages);
 
     return messages;
   } catch (error) {

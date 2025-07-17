@@ -18,7 +18,11 @@ interface NaisysDataContextType {
   readStatus: Record<string, ReadStatus>;
   getLogsForAgent: (agent?: string) => LogEntry[];
   getMailForAgent: (agent?: string) => ThreadMessage[];
-  updateReadStatus: (agentName: string, lastReadLogId: number) => Promise<void>;
+  updateReadStatus: (
+    agentName: string,
+    lastReadLogId?: number,
+    lastReadMailId?: number,
+  ) => Promise<void>;
 }
 
 const NaisysDataContext = createContext<NaisysDataContextType | undefined>(
@@ -88,9 +92,7 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
       if (!agent) {
         return allLogs;
       }
-      return allLogs.filter(
-        (log) => log.username.toLowerCase() === agent.toLowerCase(),
-      );
+      return allLogs.filter((log) => log.username === agent);
     };
   }, [allLogs]);
 
@@ -101,40 +103,51 @@ export const NaisysDataProvider: React.FC<{ children: React.ReactNode }> = ({
       }
       return allMail.filter(
         (mail) =>
-          mail.username.toLowerCase() === agent.toLowerCase() ||
-          mail.members.some(
-            (member) => member.username.toLowerCase() === agent!.toLowerCase(),
-          ),
+          mail.username === agent ||
+          mail.members.some((member) => member.username === agent!),
       );
     };
   }, [allMail]);
 
   const updateReadStatus = async (
     agentName: string,
-    lastReadLogId: number,
+    lastReadLogId?: number,
+    lastReadMailId?: number,
   ): Promise<void> => {
     try {
+      const body: any = { agentName };
+      if (lastReadLogId !== undefined) body.lastReadLogId = lastReadLogId;
+      if (lastReadMailId !== undefined) body.lastReadMailId = lastReadMailId;
+
       const response = await fetch("/api/read-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          agentName,
-          lastReadLogId,
-        }),
+        body: JSON.stringify(body),
       });
 
       if (response.ok) {
         const updateStatus = readStatus[agentName] || {
           lastReadLogId: -1,
           latestLogId: -1,
+          lastReadMailId: -1,
+          latestMailId: -1,
         };
 
-        updateStatus.lastReadLogId = Math.max(
-          updateStatus.lastReadLogId,
-          lastReadLogId,
-        );
+        if (lastReadLogId !== undefined) {
+          updateStatus.lastReadLogId = Math.max(
+            updateStatus.lastReadLogId,
+            lastReadLogId,
+          );
+        }
+
+        if (lastReadMailId !== undefined) {
+          updateStatus.lastReadMailId = Math.max(
+            updateStatus.lastReadMailId,
+            lastReadMailId,
+          );
+        }
 
         setReadStatus((prevStatus) => ({
           ...prevStatus,
