@@ -1,5 +1,5 @@
 import { ThreadMessage, ThreadMember, SendMailRequest, SendMailResponse } from "shared/src/mail-types.js";
-import { runNaisysDbCommand } from "../database/naisysDatabase.js";
+import { selectFromNaisysDb } from "../database/naisysDatabase.js";
 import { updateLatestMailIds } from "./readService.js";
 
 interface NaisysThreadMessage {
@@ -54,7 +54,7 @@ export async function getThreadMessages(
     sql += " ORDER BY tm.id DESC LIMIT ?";
     params.push(limit);
 
-    const dbMessages = await runNaisysDbCommand<NaisysThreadMessage[]>(
+    const dbMessages = await selectFromNaisysDb<NaisysThreadMessage[]>(
       sql,
       params,
     );
@@ -111,7 +111,7 @@ async function getThreadMembersMap(
       WHERE tm.threadId IN (${placeholders})
     `;
 
-    const dbMembers = await runNaisysDbCommand<NaisysThreadMember[]>(
+    const dbMembers = await selectFromNaisysDb<NaisysThreadMember[]>(
       sql,
       threadIds,
     );

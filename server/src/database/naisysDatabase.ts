@@ -5,26 +5,17 @@ import sqlite3 from "sqlite3";
 
 sqlite3.verbose();
 
-export async function runNaisysDbCommand<T>(
+async function executeOnNaisysDb<T>(
   sql: string,
   params: any[] = [],
+  method: "all" | "run",
 ): Promise<T> {
-  /*const settings = await getSettings();
-
-  if (!settings) {
-    throw new Error("Settings not found. Please ensure they are initialized.");
-  }
-
-  if (!settings.naisysDataFolderPath) {
-    throw new Error("Naisys data folder path is not set in settings.");
-  }*/
-
   if (!env.NAISYS_FOLDER_PATH) {
     throw new Error("NAISYS_FOLDER_PATH environment variable is not set.");
   }
 
   const naisysDbPath = path.join(
-    env.NAISYS_FOLDER_PATH, //settings.naisysDataFolderPath,
+    env.NAISYS_FOLDER_PATH,
     "database",
     "naisys.sqlite",
   );
@@ -38,15 +29,40 @@ export async function runNaisysDbCommand<T>(
 
   const db = new sqlite3.Database(naisysDbPath);
 
+  // Configure database
+  if (method === "run") {
+    db.run("PRAGMA foreign_keys = ON");
+  }
+
   return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
+    const callback = (err: Error | null, result: any) => {
       db.close();
 
       if (err) {
         reject(err);
       } else {
-        resolve(rows as T);
+        resolve(result as T);
       }
-    });
+    };
+
+    if (method === "all") {
+      db.all(sql, params, callback);
+    } else {
+      db.run(sql, params, callback);
+    }
   });
+}
+
+export async function selectFromNaisysDb<T>(
+  sql: string,
+  params: any[] = [],
+): Promise<T> {
+  return executeOnNaisysDb<T>(sql, params, "all");
+}
+
+export async function runOnNaisysDb(
+  sql: string,
+  params: any[] = [],
+): Promise<sqlite3.RunResult> {
+  return executeOnNaisysDb<sqlite3.RunResult>(sql, params, "run");
 }

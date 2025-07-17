@@ -1,5 +1,5 @@
 import { LogEntry, ReadStatus, ThreadMessage } from "shared";
-import { runOverlordDbCommand } from "../database/overlordDatabase";
+import { selectFromOverlordDb, runOnOverlordDb } from "../database/overlordDatabase";
 import { SettingsRecord } from "./settingsService";
 
 function createDefaultReadStatus(): ReadStatus {
@@ -12,7 +12,7 @@ function createDefaultReadStatus(): ReadStatus {
 }
 
 export async function getReadStatus(): Promise<Record<string, ReadStatus>> {
-  const settingsRecords = await runOverlordDbCommand<SettingsRecord[] | null>(`
+  const settingsRecords = await selectFromOverlordDb<SettingsRecord[] | null>(`
     SELECT read_status_json
     FROM settings 
     WHERE id = 1
@@ -28,7 +28,7 @@ export async function getReadStatus(): Promise<Record<string, ReadStatus>> {
 async function saveReadStatus(
   readStatusByAgent: Record<string, ReadStatus>,
 ): Promise<void> {
-  return await runOverlordDbCommand<void>(
+  await runOnOverlordDb(
     `
     UPDATE settings 
     SET read_status_json = ?, modify_date = ?

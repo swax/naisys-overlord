@@ -1,6 +1,6 @@
 import sqlite3 from "sqlite3";
 import { Agent } from "shared";
-import { runNaisysDbCommand } from "../database/naisysDatabase.js";
+import { selectFromNaisysDb } from "../database/naisysDatabase.js";
 
 sqlite3.verbose();
 
@@ -17,7 +17,7 @@ export async function getAgents(): Promise<Agent[]> {
   const agents: Agent[] = [];
 
   try {
-    const users = await runNaisysDbCommand<NaisysUser[]>(
+    const users = await selectFromNaisysDb<NaisysUser[]>(
       "SELECT id, username, title, agentPath, leadUsername, lastActive FROM Users",
       [],
     );

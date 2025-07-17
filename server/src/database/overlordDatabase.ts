@@ -22,24 +22,52 @@ const createSettingsTable = `
   )
 `;
 
-await runOverlordDbCommand(createSessionTable);
-await runOverlordDbCommand(createSettingsTable);
+await runOnOverlordDb(createSessionTable);
+await runOnOverlordDb(createSettingsTable);
 
-export async function runOverlordDbCommand<T>(
+await runOnOverlordDb("PRAGMA journal_mode = WAL");
+
+async function executeOnOverlordDb<T>(
   sql: string,
   params: any[] = [],
+  method: "all" | "run",
 ): Promise<T> {
   const db = new sqlite3.Database(overlordDbPth);
 
+  // Configure database
+  if (method === "run") {
+    db.run("PRAGMA foreign_keys = ON");
+  }
+
   return new Promise((resolve, reject) => {
-    db.all(sql, params, (err, rows) => {
+    const callback = (err: Error | null, result: any) => {
       db.close();
 
       if (err) {
         reject(err);
       } else {
-        resolve(rows as T);
+        resolve(result as T);
       }
-    });
+    };
+
+    if (method === "all") {
+      db.all(sql, params, callback);
+    } else {
+      db.run(sql, params, callback);
+    }
   });
+}
+
+export async function selectFromOverlordDb<T>(
+  sql: string,
+  params: any[] = [],
+): Promise<T> {
+  return executeOnOverlordDb<T>(sql, params, "all");
+}
+
+export async function runOnOverlordDb(
+  sql: string,
+  params: any[] = [],
+): Promise<sqlite3.RunResult> {
+  return executeOnOverlordDb<sqlite3.RunResult>(sql, params, "run");
 }

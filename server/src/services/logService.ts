@@ -1,6 +1,6 @@
 import { LogRole, LogSource, LogType } from "shared";
 import { LogEntry } from "shared/src/log-types.js";
-import { runNaisysDbCommand } from "../database/naisysDatabase.js";
+import { selectFromNaisysDb } from "../database/naisysDatabase.js";
 import { updateLatestLogIds } from "./readService.js";
 
 interface NaisysLogEntry {
@@ -38,7 +38,7 @@ export async function getLogs(
     sql += " ORDER BY id DESC LIMIT ?";
     params.push(limit);
 
-    const dbLogs = await runNaisysDbCommand<NaisysLogEntry[]>(sql, params);
+    const dbLogs = await selectFromNaisysDb<NaisysLogEntry[]>(sql, params);
 
     // Resort ascending
     dbLogs.sort((a, b) => a.id - b.id);
