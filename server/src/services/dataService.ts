@@ -22,13 +22,14 @@ export async function getNaisysData(
 ): Promise<NaisysData> {
   try {
     // Fetch agents, logs, mail, and read status in parallel
-    const [agents, logs, mail, readStatus] = await Promise.all([
+    const [agents, logs, mail] = await Promise.all([
       getAgents(),
       getLogs(logsAfter, logsLimit), // No agent filter - get all logs
       getThreadMessages(mailAfter, mailLimit),
-      // Important this happens last as getLogs() updates read status
-      getReadStatus(),
     ]);
+
+    // Important this happens last as getLogs/getThreadMessages() updates read status
+    const readStatus = await getReadStatus();
 
     // For now, use the first user's read status or implement a global read status
     // This assumes there's typically one admin user, but can be enhanced later

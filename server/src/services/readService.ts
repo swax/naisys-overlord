@@ -61,6 +61,8 @@ export async function updateLastReadLogId(
 }
 
 export async function updateLatestLogIds(logs: LogEntry[]): Promise<void> {
+  if (logs.length === 0) return;
+
   let readStatusByAgent = await getReadStatus();
 
   // Update latest log ids for each agent
@@ -103,6 +105,8 @@ export async function updateLastReadMailId(
 export async function updateLatestMailIds(
   mail: ThreadMessage[],
 ): Promise<void> {
+  if (mail.length === 0) return;
+
   let readStatusByAgent = await getReadStatus();
 
   // Update latest *received* mail ids for each agent

@@ -2,5 +2,5 @@ client/dist/
 node_modules/
 server/dist/
 server/.env
-server/overlord.db
+server/overlord.*
 shared/dist/

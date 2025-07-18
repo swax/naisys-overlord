@@ -10,7 +10,7 @@ import {
   Text,
 } from "@mantine/core";
 import { IconMailbox, IconPlus, IconSend } from "@tabler/icons-react";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { NewMessageModal } from "../components/NewMessageModal";
 import { useNaisysDataContext } from "../contexts/NaisysDataContext";
@@ -131,6 +131,7 @@ export const Mail: React.FC = () => {
     getMailForAgent,
     isLoading: mailLoading,
     error: mailError,
+    readStatus,
     updateReadStatus,
   } = useNaisysDataContext();
 
@@ -141,8 +142,6 @@ export const Mail: React.FC = () => {
     type: "success" | "error";
     message: string;
   } | null>(null);
-  const lastReadMailIdRef = useRef<Record<string, number>>({});
-
   // Get filtered mail for the current agent
   const allMail = getMailForAgent(agentParam);
 
@@ -172,21 +171,16 @@ export const Mail: React.FC = () => {
 
   // Update read status when viewing mail - only when latest mail ID changes
   useEffect(() => {
-    if (allMail.length > 0 && agentParam) {
-      const latestMailId = Math.max(
-        ...allMail
-          .filter((m) => m.username !== agentParam) // Only consider received mail for read status
-          .map((mail) => mail.id),
-      );
-      const previousLatestMailId = lastReadMailIdRef.current[agentParam] || 0;
+    if (!agentParam || !readStatus[agentParam]) return;
 
-      // Only update if the latest mail ID has actually changed
-      if (latestMailId > previousLatestMailId) {
-        lastReadMailIdRef.current[agentParam] = latestMailId;
-        updateReadStatus(agentParam, undefined, latestMailId);
-      }
+    // Get read status for the current agent
+    const userReadStatus = readStatus[agentParam];
+
+    const latestMailId = userReadStatus.latestMailId;
+    if (latestMailId > userReadStatus.lastReadMailId) {
+      updateReadStatus(agentParam, undefined, latestMailId);
     }
-  }, [allMail, agentParam, updateReadStatus]);
+  }, [allMail, readStatus, updateReadStatus]);
 
   // Calculate sent and received counts
   const sentCount = allMail.filter((mail) => {
