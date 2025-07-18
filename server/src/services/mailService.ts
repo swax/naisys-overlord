@@ -1,5 +1,14 @@
-import { ThreadMessage, ThreadMember, SendMailRequest, SendMailResponse } from "shared/src/mail-types.js";
-import { selectFromNaisysDb } from "../database/naisysDatabase.js";
+import {
+  SendMailRequest,
+  SendMailResponse,
+  ThreadMember,
+  ThreadMessage,
+} from "shared/src/mail-types.js";
+import {
+  runOnNaisysDb,
+  selectFromNaisysDb,
+} from "../database/naisysDatabase.js";
+import { getAgents } from "./agentService.js";
 import { updateLatestMailIds } from "./readService.js";
 
 interface NaisysThreadMessage {
@@ -138,35 +147,71 @@ async function getThreadMembersMap(
   }
 }
 
+/**
+ * Very similar to the llmail.ts newThread function in NAISYS
+ * https://github.com/swax/NAISYS/blob/main/src/features/llmail.ts#L196
+ */
 export async function sendMessage(
   request: SendMailRequest,
 ): Promise<SendMailResponse> {
   try {
-    // TODO: Implement actual message sending logic
-    // This should:
+    const { from, to, subject, message } = request;
+
+    // Clean message (handle escaped newlines)
+    const cleanMessage = message.replace(/\\n/g, "\n");
+
+    // Get all agents to validate users
+    const agents = await getAgents();
+
     // 1. Validate the 'from' user exists
+    const fromUser = agents.find((agent) => agent.name === from);
+    if (!fromUser) {
+      return {
+        success: false,
+        message: `Error: User ${from} not found`,
+      };
+    }
+
     // 2. Validate the 'to' user exists
-    // 3. Create or find existing thread between users
+    const toUser = agents.find((agent) => agent.name === to);
+    if (!toUser) {
+      return {
+        success: false,
+        message: `Error: User ${to} not found`,
+      };
+    }
+
+    // 3. Create new thread
+    const threadResult = await runOnNaisysDb(
+      "INSERT INTO Threads (subject, tokenCount) VALUES (?, ?)",
+      [subject, 0], // TODO
+    );
+
+    const threadId = threadResult.lastID!;
+
+    // Add both users to the thread
+    await runOnNaisysDb(
+      "INSERT INTO ThreadMembers (threadId, userId, newMsgId) VALUES (?, ?, ?), (?, ?, ?)",
+      [threadId, fromUser.id, -1, threadId, toUser.id, 0],
+    );
+
     // 4. Insert new message into ThreadMessages table
-    // 5. Update ThreadMembers table
-    // 6. Return success response with messageId
-    
-    console.log(`Sending message from ${request.from} to ${request.to}:`, {
-      subject: request.subject,
-      message: request.message,
-    });
-    
-    // For now, return a stub response
+    const messageResult = await runOnNaisysDb(
+      "INSERT INTO ThreadMessages (threadId, userId, message, date) VALUES (?, ?, ?, ?)",
+      [threadId, fromUser.id, cleanMessage, new Date().toISOString()],
+    );
+
     return {
       success: true,
-      message: "Message sending not yet implemented",
-      messageId: -1,
+      message: "Message sent successfully",
+      messageId: messageResult.lastID!,
     };
   } catch (error) {
     console.error("Error sending message:", error);
     return {
       success: false,
-      message: error instanceof Error ? error.message : "Failed to send message",
+      message:
+        error instanceof Error ? error.message : "Failed to send message",
     };
   }
 }

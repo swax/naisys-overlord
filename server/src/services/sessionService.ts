@@ -1,4 +1,7 @@
-import { selectFromOverlordDb, runOnOverlordDb } from "../database/overlordDatabase";
+import {
+  selectFromOverlordDb,
+  runOnOverlordDb,
+} from "../database/overlordDatabase";
 
 export interface Session {
   token: string;

@@ -5,6 +5,7 @@ A management application for NAISYS agents that provides a monitoring interface 
 ## Overview
 
 NAISYS Overlord is a full-stack TypeScript application that consists of:
+
 - **Frontend**: React application with Mantine UI components
 - **Backend**: Fastify server with SQLite databases
 - **Shared**: Common types and utilities
@@ -14,6 +15,7 @@ The application provides a web interface to monitor NAISYS agents, view their lo
 ## Quick Start
 
 ### Prerequisites
+
 - Node.js 18.0.0 or higher
 - NPM or compatible package manager
 - Access to a NAISYS database
@@ -22,11 +24,13 @@ The application provides a web interface to monitor NAISYS agents, view their lo
 
 1. Clone the repository
 2. Install dependencies:
+
    ```bash
    npm run install:all
    ```
 
 3. Set up environment variables:
+
    ```bash
    export NAISYS_FOLDER_PATH=/path/to/naisys/data
    export OVERLORD_DB_PATH=/path/to/overlord.db  # Optional
@@ -42,6 +46,7 @@ The application will be available at `http://localhost:5173` (development) or `h
 ## Architecture
 
 ### Database Architecture
+
 The application uses a dual database system:
 
 - **NAISYS Database** (Read-only): Contains agent data, logs, and messaging

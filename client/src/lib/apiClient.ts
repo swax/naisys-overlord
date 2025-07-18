@@ -167,8 +167,7 @@ export const sendMail = async (
   } catch (error) {
     return {
       success: false,
-      message:
-        error instanceof Error ? error.message : "Failed to send mail",
+      message: error instanceof Error ? error.message : "Failed to send mail",
     };
   }
 };

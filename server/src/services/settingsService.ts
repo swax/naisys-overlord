@@ -1,5 +1,8 @@
 import { Settings } from "shared";
-import { selectFromOverlordDb, runOnOverlordDb } from "../database/overlordDatabase";
+import {
+  selectFromOverlordDb,
+  runOnOverlordDb,
+} from "../database/overlordDatabase";
 
 export interface SettingsRecord {
   id: number;

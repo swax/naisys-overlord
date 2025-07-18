@@ -1,4 +1,5 @@
 export interface Agent {
+  id: number;
   name: string;
   title: string;
   online: boolean;

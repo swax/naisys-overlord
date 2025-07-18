@@ -24,6 +24,7 @@ export async function getAgents(): Promise<Agent[]> {
 
     users.forEach((user) => {
       agents.push({
+        id: user.id,
         name: user.username,
         title: user.title,
         online: isAgentOnline(user.lastActive),

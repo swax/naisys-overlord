@@ -5,12 +5,14 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Development Commands
 
 ### Building and Running
+
 - `npm run dev` - Start development servers (both client and server)
 - `npm run build` - Build all packages (shared, client, server)
 - `npm start` - Start production server
 - `npm run format` - Format code with Prettier
 
 ### Individual Package Commands
+
 - `npm run dev --workspace=server` - Start server only
 - `npm run dev --workspace=client` - Start client only
 - `npm run build --workspace=shared` - Build shared types
@@ -18,20 +20,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `npm run type-check --workspace=server` - TypeScript check for server
 
 ### Testing
+
 No test framework is currently configured. When adding tests, check if the project uses Jest, Vitest, or another framework.
 
 ## Architecture Overview
 
 ### High-Level Structure
+
 NAISYS Overlord is a management application that provides a monitoring interface for NAISYS agents. It operates above the NAISYS database to provide visibility into agent operations and enable communication with agents.
 
 ### Workspace Structure
+
 - `shared/` - TypeScript types and utilities shared between client and server
 - `client/` - React frontend using Vite, Mantine UI, and React Query
 - `server/` - Fastify backend with TypeScript
 - `naisys-db-schema.ts` - Database schema definitions for NAISYS system
 
 ### Database Architecture (Dual Database System)
+
 The application uses two separate databases:
 
 1. **NAISYS Database** (Read-only)
@@ -47,6 +53,7 @@ The application uses two separate databases:
    - Accessed via: `server/src/database/overlordDatabase.ts`
 
 ### Core Services Layer
+
 Located in `server/src/services/`, each service has a specific responsibility:
 
 - **dataService.ts** - Main data aggregation orchestrator, combines data from all services
@@ -58,7 +65,9 @@ Located in `server/src/services/`, each service has a specific responsibility:
 - **settingsService.ts** - Application configuration management
 
 ### API Structure
+
 Routes are organized in `server/src/routes/`:
+
 - `/api/data` - Main data endpoint with pagination support
 - `/api/access-key` - Access key validation and session creation
 - `/api/session` - Session validation
@@ -66,6 +75,7 @@ Routes are organized in `server/src/routes/`:
 - `/api/read-status` - Update read status for agents
 
 ### Frontend Architecture
+
 - **React** with TypeScript and **Mantine UI** components
 - **React Query** for data fetching and caching
 - **React Router** for navigation
@@ -73,6 +83,7 @@ Routes are organized in `server/src/routes/`:
 - Layout: AppShell with header, navbar (agent sidebar), footer (navigation), and main content
 
 ### Key Architectural Patterns
+
 1. **Separation of Concerns**: Clear distinction between NAISYS system data (read-only) and overlord state (read/write)
 2. **Service Layer Pattern**: Services abstract database operations from routes
 3. **Parallel Data Fetching**: Services use `Promise.all()` for efficient concurrent data retrieval
@@ -80,12 +91,14 @@ Routes are organized in `server/src/routes/`:
 5. **Session Management**: Cookie-based sessions with automatic cleanup
 
 ### Environment Variables
+
 - `NAISYS_FOLDER_PATH` - Path to NAISYS data folder (required)
 - `OVERLORD_DB_PATH` - Path to overlord database (optional, defaults to `./overlord.db`)
 - `NODE_ENV` - Environment mode (development/production)
 - `PORT` - Server port (defaults to 3001)
 
 ### Important Code Patterns
+
 - All database operations use Promise-based wrappers with proper error handling
 - Services return typed data structures defined in `shared/src/`
 - Read status updates are automatically triggered by data fetching operations
@@ -93,6 +106,7 @@ Routes are organized in `server/src/routes/`:
 - All API endpoints that modify data require session authentication
 
 ### Development Notes
+
 - The application serves the React client from `/overlord/` prefix in production
 - CORS is configured for development (http://localhost:5173)
 - Database connections are opened/closed per query for simplicity

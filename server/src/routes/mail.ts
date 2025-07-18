@@ -41,7 +41,8 @@ export default async function mailRoutes(
         console.error("Error in send-mail route:", error);
         return reply.code(500).send({
           success: false,
-          message: error instanceof Error ? error.message : "Internal server error",
+          message:
+            error instanceof Error ? error.message : "Internal server error",
         });
       }
     },

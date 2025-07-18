@@ -61,7 +61,11 @@ const MailMessageComponent: React.FC<{
                 <IconMailbox size={16} />
               )}
             </ActionIcon>
-            <Group gap="xs" align="baseline" style={{ minWidth: "80px", flexShrink: 0 }}>
+            <Group
+              gap="xs"
+              align="baseline"
+              style={{ minWidth: "80px", flexShrink: 0 }}
+            >
               <Text size="xs" c="dimmed" fw={400} style={{ flexShrink: 0 }}>
                 {isFromCurrentAgent ? "To:" : "From:"}
               </Text>
@@ -70,7 +74,11 @@ const MailMessageComponent: React.FC<{
                   const agent = agents.find((a) => a.name === username);
                   return (
                     <React.Fragment key={username}>
-                      {index > 0 && <Text size="sm" c="dimmed">,</Text>}
+                      {index > 0 && (
+                        <Text size="sm" c="dimmed">
+                          ,
+                        </Text>
+                      )}
                       <Text size="sm" fw={600}>
                         {username}
                       </Text>
@@ -129,7 +137,10 @@ export const Mail: React.FC = () => {
   const [showSent, setShowSent] = useState(false);
   const [showReceived, setShowReceived] = useState(false);
   const [newMessageModalOpened, setNewMessageModalOpened] = useState(false);
-  const [sendStatus, setSendStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [sendStatus, setSendStatus] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
   const lastReadMailIdRef = useRef<Record<string, number>>({});
 
   // Get filtered mail for the current agent
@@ -203,20 +214,21 @@ export const Mail: React.FC = () => {
 
       if (response.success) {
         setSendStatus({
-          type: 'success',
-          message: 'Message sent successfully!'
+          type: "success",
+          message: "Message sent successfully!",
         });
         // TODO: Optionally refresh data to show the sent message
       } else {
         setSendStatus({
-          type: 'error',
-          message: response.message || 'Failed to send message'
+          type: "error",
+          message: response.message || "Failed to send message",
         });
       }
     } catch (error) {
       setSendStatus({
-        type: 'error',
-        message: error instanceof Error ? error.message : 'Error sending message'
+        type: "error",
+        message:
+          error instanceof Error ? error.message : "Error sending message",
       });
     }
   };
@@ -318,9 +330,9 @@ export const Mail: React.FC = () => {
       )}
 
       {sendStatus && (
-        <Alert 
-          color={sendStatus.type === 'success' ? 'green' : 'red'} 
-          title={sendStatus.type === 'success' ? 'Success' : 'Error'}
+        <Alert
+          color={sendStatus.type === "success" ? "green" : "red"}
+          title={sendStatus.type === "success" ? "Success" : "Error"}
           onClose={() => setSendStatus(null)}
           withCloseButton
         >

@@ -16,7 +16,12 @@ interface NewMessageModalProps {
   onClose: () => void;
   agents: Agent[];
   currentAgentName: string;
-  onSend: (sender: string, recipient: string, subject: string, body: string) => Promise<void>;
+  onSend: (
+    sender: string,
+    recipient: string,
+    subject: string,
+    body: string,
+  ) => Promise<void>;
 }
 
 export const NewMessageModal: React.FC<NewMessageModalProps> = ({
@@ -44,7 +49,9 @@ export const NewMessageModal: React.FC<NewMessageModalProps> = ({
   }));
 
   // Filter out the current sender from the recipients list
-  const availableRecipients = allAgentOptions.filter((agent) => agent.value !== sender);
+  const availableRecipients = allAgentOptions.filter(
+    (agent) => agent.value !== sender,
+  );
 
   const handleSend = async () => {
     if (!recipient || !subject.trim() || !body.trim()) {
