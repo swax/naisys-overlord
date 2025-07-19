@@ -1,8 +1,10 @@
 import sqlite3 from "sqlite3";
-
-sqlite3.verbose();
-
-const overlordDbPth = process.env.OVERLORD_DB_PATH || "./overlord.db";
+import {
+  DatabaseConfig,
+  initializeDatabase,
+  runOnDb,
+  selectFromDb,
+} from "./databaseService";
 
 const createSessionTable = `
   CREATE TABLE IF NOT EXISTS sessions (
@@ -22,52 +24,34 @@ const createSettingsTable = `
   )
 `;
 
-await runOnOverlordDb(createSessionTable);
-await runOnOverlordDb(createSettingsTable);
+function getOverlordConfig(): DatabaseConfig {
+  const dbPath = process.env.OVERLORD_DB_PATH || "./overlord.db";
 
-await runOnOverlordDb("PRAGMA journal_mode = WAL");
-
-async function executeOnOverlordDb<T>(
-  sql: string,
-  params: any[] = [],
-  method: "all" | "run",
-): Promise<T> {
-  const db = new sqlite3.Database(overlordDbPth);
-
-  // Configure database
-  if (method === "run") {
-    db.run("PRAGMA foreign_keys = ON");
-  }
-
-  return new Promise((resolve, reject) => {
-    const callback = (err: Error | null, result: any) => {
-      db.close();
-
-      if (err) {
-        reject(err);
-      } else {
-        resolve(result as T);
-      }
-    };
-
-    if (method === "all") {
-      db.all(sql, params, callback);
-    } else {
-      db.run(sql, params, callback);
-    }
-  });
+  return {
+    dbPath,
+    validatePath: false, // Overlord creates the DB if it doesn't exist
+    initSql: [
+      createSessionTable,
+      createSettingsTable,
+      "PRAGMA journal_mode = WAL",
+    ],
+  };
 }
+
+// Initialize the database on module load
+const config = getOverlordConfig();
+await initializeDatabase(config);
 
 export async function selectFromOverlordDb<T>(
   sql: string,
   params: any[] = [],
 ): Promise<T> {
-  return executeOnOverlordDb<T>(sql, params, "all");
+  return selectFromDb<T>(config, sql, params);
 }
 
 export async function runOnOverlordDb(
   sql: string,
   params: any[] = [],
 ): Promise<sqlite3.RunResult> {
-  return executeOnOverlordDb<sqlite3.RunResult>(sql, params, "run");
+  return runOnDb(config, sql, params);
 }
