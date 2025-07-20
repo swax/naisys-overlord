@@ -197,6 +197,7 @@ export const Mail: React.FC = () => {
     recipient: string,
     subject: string,
     body: string,
+    attachments: Array<{ file: File; name: string; previewUrl?: string }>,
   ): Promise<void> => {
     try {
       const response = await sendMail({
@@ -204,6 +205,7 @@ export const Mail: React.FC = () => {
         to: recipient,
         subject,
         message: body,
+        files: attachments.map(attachment => attachment.file),
       });
 
       if (response.success) {

@@ -10,6 +10,8 @@ import {
 } from "../database/naisysDatabase.js";
 import { getAgents } from "./agentService.js";
 import { updateLatestMailIds } from "./readService.js";
+import fs from "fs/promises";
+import path from "path";
 
 interface NaisysThreadMessage {
   id: number;
@@ -155,10 +157,10 @@ export async function sendMessage(
   request: SendMailRequest,
 ): Promise<SendMailResponse> {
   try {
-    const { from, to, subject, message } = request;
+    const { from, to, subject, message, attachments } = request;
 
     // Clean message (handle escaped newlines)
-    const cleanMessage = message.replace(/\\n/g, "\n");
+    let cleanMessage = message.replace(/\\n/g, "\n");
 
     // Get all agents to validate users
     const agents = await getAgents();
@@ -201,10 +203,38 @@ export async function sendMessage(
       [threadId, fromUser.id, cleanMessage, new Date().toISOString()],
     );
 
+    const messageId = messageResult.lastID!;
+
+    // 5. Handle attachments if any
+    if (attachments && attachments.length > 0) {
+      const naisysFolderPath = process.env.NAISYS_FOLDER_PATH;
+      if (!naisysFolderPath) {
+        throw new Error("NAISYS_FOLDER_PATH environment variable not set");
+      }
+
+      const attachmentsDir = path.join(naisysFolderPath, "attachments", messageId.toString());
+      await saveAttachments(messageId, attachments);
+      
+      // Create detailed attachment info
+      const attachmentDetails = attachments.map(att => {
+        const sizeKB = (att.data.length / 1024).toFixed(1);
+        return `${att.filename} (${sizeKB} KB)`;
+      }).join(', ');
+      
+      const attachmentCount = attachments.length;
+      const updatedMessage = `${cleanMessage}\n\n${attachmentCount} attached file${attachmentCount > 1 ? 's' : ''}, located in ${attachmentsDir}\nFilenames: ${attachmentDetails}`;
+      
+      // Update the message with attachment info
+      await runOnNaisysDb(
+        "UPDATE ThreadMessages SET message = ? WHERE id = ?",
+        [updatedMessage, messageId],
+      );
+    }
+
     return {
       success: true,
       message: "Message sent successfully",
-      messageId: messageResult.lastID!,
+      messageId,
     };
   } catch (error) {
     console.error("Error sending message:", error);
@@ -213,5 +243,23 @@ export async function sendMessage(
       message:
         error instanceof Error ? error.message : "Failed to send message",
     };
+  }
+}
+
+async function saveAttachments(messageId: number, attachments: Array<{ filename: string; data: Buffer }>) {
+  const naisysFolderPath = process.env.NAISYS_FOLDER_PATH;
+  if (!naisysFolderPath) {
+    throw new Error("NAISYS_FOLDER_PATH environment variable not set");
+  }
+
+  const attachmentsDir = path.join(naisysFolderPath, "attachments", messageId.toString());
+  
+  // Create the directory
+  await fs.mkdir(attachmentsDir, { recursive: true });
+
+  // Save each attachment
+  for (const attachment of attachments) {
+    const filePath = path.join(attachmentsDir, attachment.filename);
+    await fs.writeFile(filePath, attachment.data);
   }
 }

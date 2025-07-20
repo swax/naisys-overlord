@@ -157,13 +157,39 @@ export const getNaisysData = async (
 };
 
 export const sendMail = async (
-  mailData: SendMailRequest,
+  mailData: SendMailRequest & { files?: File[] },
 ): Promise<SendMailResponse> => {
   try {
-    return await api.post<SendMailRequest, SendMailResponse>(
-      apiEndpoints.sendMail,
-      mailData,
-    );
+    // If there are files, use FormData
+    if (mailData.files && mailData.files.length > 0) {
+      const formData = new FormData();
+      formData.append('from', mailData.from);
+      formData.append('to', mailData.to);
+      formData.append('subject', mailData.subject);
+      formData.append('message', mailData.message);
+      
+      // Add files to FormData
+      mailData.files.forEach((file) => {
+        formData.append(`attachments`, file);
+      });
+
+      const response = await fetch(`${API_BASE}${apiEndpoints.sendMail}`, {
+        method: "POST",
+        body: formData,
+      });
+      
+      const result = await response.json();
+      if (!response.ok) {
+        throw new Error(result.message || `API Error: ${response.status}`);
+      }
+      return result;
+    } else {
+      // No files, use regular JSON request
+      return await api.post<SendMailRequest, SendMailResponse>(
+        apiEndpoints.sendMail,
+        mailData,
+      );
+    }
   } catch (error) {
     return {
       success: false,

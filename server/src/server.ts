@@ -3,6 +3,7 @@ import Fastify from "fastify";
 import cors from "@fastify/cors";
 import staticFiles from "@fastify/static";
 import cookie from "@fastify/cookie";
+import multipart from "@fastify/multipart";
 import path from "path";
 import { fileURLToPath } from "url";
 import apiRoutes from "./routes/api.js";
@@ -24,6 +25,8 @@ await fastify.register(cors, {
 });
 
 await fastify.register(cookie);
+
+await fastify.register(multipart);
 
 fastify.register(apiRoutes, { prefix: "/api" });
 

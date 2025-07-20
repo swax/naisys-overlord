@@ -2,19 +2,63 @@ import { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { SendMailRequest, SendMailResponse } from "shared";
 import { sendMessage } from "../services/mailService.js";
 import { validateSession } from "./access.js";
+import { MultipartFile } from "@fastify/multipart";
 
 export default async function mailRoutes(
   fastify: FastifyInstance,
   _options: FastifyPluginOptions,
 ) {
-  fastify.post<{ Body: SendMailRequest; Reply: SendMailResponse }>(
+  fastify.post<{ Reply: SendMailResponse }>(
     "/send-mail",
     {
       preHandler: validateSession,
     },
     async (request, reply) => {
       try {
-        const { from, to, subject, message } = request.body;
+        const contentType = request.headers['content-type'];
+        let from: string = '', to: string = '', subject: string = '', message: string = '';
+        let attachments: Array<{ filename: string; data: Buffer }> = [];
+
+        if (contentType?.includes('multipart/form-data')) {
+          // Handle multipart form data
+          const parts = request.parts();
+          
+          for await (const part of parts) {
+            if (part.type === 'field') {
+              const field = part as any;
+              switch (field.fieldname) {
+                case 'from':
+                  from = field.value;
+                  break;
+                case 'to':
+                  to = field.value;
+                  break;
+                case 'subject':
+                  subject = field.value;
+                  break;
+                case 'message':
+                  message = field.value;
+                  break;
+              }
+            } else if (part.type === 'file') {
+              const file = part as MultipartFile;
+              if (file.fieldname === 'attachments') {
+                const buffer = await file.toBuffer();
+                attachments.push({
+                  filename: file.filename || 'unnamed_file',
+                  data: buffer,
+                });
+              }
+            }
+          }
+        } else {
+          // Handle JSON request (backward compatibility)
+          const body = request.body as SendMailRequest;
+          from = body.from;
+          to = body.to;
+          subject = body.subject;
+          message = body.message;
+        }
 
         // Validate required fields
         if (!from || !to || !subject || !message) {
@@ -30,6 +74,7 @@ export default async function mailRoutes(
           to,
           subject,
           message,
+          attachments: attachments.length > 0 ? attachments : undefined,
         });
 
         if (result.success) {

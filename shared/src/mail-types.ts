@@ -21,6 +21,10 @@ export interface SendMailRequest {
   to: string;
   subject: string;
   message: string;
+  attachments?: Array<{
+    filename: string;
+    data: Buffer;
+  }>;
 }
 
 export interface SendMailResponse {
