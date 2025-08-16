@@ -2,8 +2,8 @@ import { LogEntry, ReadStatus, ThreadMessage } from "shared";
 import {
   selectFromOverlordDb,
   runOnOverlordDb,
-} from "../database/overlordDatabase";
-import { SettingsRecord } from "./settingsService";
+} from "../database/overlordDatabase.js";
+import { SettingsRecord } from "./settingsService.js";
 
 function createDefaultReadStatus(): ReadStatus {
   return {

@@ -1,6 +1,6 @@
-import { Agent } from "./agents-types";
-import { LogEntry } from "./log-types";
-import { ThreadMessage } from "./mail-types";
+import { Agent } from "./agents-types.js";
+import { LogEntry } from "./log-types.js";
+import { ThreadMessage } from "./mail-types.js";
 
 export interface ReadStatus {
   lastReadLogId: number;

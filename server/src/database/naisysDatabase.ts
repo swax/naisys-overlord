@@ -1,7 +1,7 @@
 import path from "path";
 import { env } from "process";
 import sqlite3 from "sqlite3";
-import { DatabaseConfig, runOnDb, selectFromDb } from "./databaseService";
+import { DatabaseConfig, runOnDb, selectFromDb } from "./databaseService.js";
 
 function getNaisysConfig(): DatabaseConfig {
   if (!env.NAISYS_FOLDER_PATH) {

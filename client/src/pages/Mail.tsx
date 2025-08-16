@@ -112,12 +112,14 @@ const MailMessageComponent: React.FC<{
             overflow: isExpanded ? "visible" : "hidden",
             textOverflow: isExpanded ? "clip" : "ellipsis",
           }}
-          c={isExpanded ? undefined : "dimmed"}
         >
-          <Text component="span" fw={600} c="white">
+          <Text component="span" fw={600}>
             {message.subject}
           </Text>{" "}
-          - {message.message}
+          -{" "}
+          <Text component="span" c={isExpanded ? undefined : "dimmed"}>
+            {message.message}
+          </Text>
         </Text>
       </Stack>
     </Card>
@@ -205,7 +207,7 @@ export const Mail: React.FC = () => {
         to: recipient,
         subject,
         message: body,
-        files: attachments.map(attachment => attachment.file),
+        files: attachments.map((attachment) => attachment.file),
       });
 
       if (response.success) {

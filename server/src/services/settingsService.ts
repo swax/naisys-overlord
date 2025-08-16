@@ -2,7 +2,7 @@ import { Settings } from "shared";
 import {
   selectFromOverlordDb,
   runOnOverlordDb,
-} from "../database/overlordDatabase";
+} from "../database/overlordDatabase.js";
 
 export interface SettingsRecord {
   id: number;

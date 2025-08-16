@@ -4,8 +4,8 @@ export interface HelloResponse {
   success: boolean;
 }
 
-export * from "./session-types";
-export * from "./settings-types";
-export * from "./agents-types";
-export * from "./log-types";
-export * from "./data-types";
+export * from "./session-types.js";
+export * from "./settings-types.js";
+export * from "./agents-types.js";
+export * from "./log-types.js";
+export * from "./data-types.js";

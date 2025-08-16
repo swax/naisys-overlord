@@ -4,7 +4,7 @@ import {
   initializeDatabase,
   runOnDb,
   selectFromDb,
-} from "./databaseService";
+} from "./databaseService.js";
 
 const createSessionTable = `
   CREATE TABLE IF NOT EXISTS sessions (

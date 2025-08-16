@@ -1,7 +1,7 @@
 import {
   selectFromOverlordDb,
   runOnOverlordDb,
-} from "../database/overlordDatabase";
+} from "../database/overlordDatabase.js";
 
 export interface Session {
   token: string;
