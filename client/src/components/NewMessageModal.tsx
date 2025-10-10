@@ -36,6 +36,9 @@ interface NewMessageModalProps {
     body: string,
     attachments: FileAttachment[],
   ) => Promise<void>;
+  initialRecipient?: string;
+  initialSubject?: string;
+  initialBody?: string;
 }
 
 export const NewMessageModal: React.FC<NewMessageModalProps> = ({
@@ -44,6 +47,9 @@ export const NewMessageModal: React.FC<NewMessageModalProps> = ({
   agents,
   currentAgentName,
   onSend,
+  initialRecipient,
+  initialSubject,
+  initialBody,
 }) => {
   const [sender, setSender] = useState<string>(currentAgentName);
   const [recipient, setRecipient] = useState<string>("");
@@ -52,11 +58,32 @@ export const NewMessageModal: React.FC<NewMessageModalProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [attachments, setAttachments] = useState<FileAttachment[]>([]);
   const [expandedImageIndex, setExpandedImageIndex] = useState<number | null>(null);
+  const bodyTextareaRef = React.useRef<HTMLTextAreaElement>(null);
 
   // Update sender when currentAgentName changes
   useEffect(() => {
     setSender(currentAgentName);
   }, [currentAgentName]);
+
+  // Set initial values when modal opens with reply data
+  useEffect(() => {
+    if (opened && initialRecipient) {
+      setRecipient(initialRecipient);
+    }
+    if (opened && initialSubject) {
+      setSubject(initialSubject);
+    }
+    if (opened && initialBody) {
+      setBody(initialBody);
+      // Focus the textarea and position cursor at the beginning
+      setTimeout(() => {
+        if (bodyTextareaRef.current) {
+          bodyTextareaRef.current.focus();
+          bodyTextareaRef.current.setSelectionRange(0, 0);
+        }
+      }, 0);
+    }
+  }, [opened, initialRecipient, initialSubject, initialBody]);
 
   // Add paste event listener for images
   useEffect(() => {
@@ -243,6 +270,7 @@ export const NewMessageModal: React.FC<NewMessageModalProps> = ({
         />
 
         <Textarea
+          ref={bodyTextareaRef}
           label="Message"
           placeholder="Enter your message"
           value={body}

@@ -9,7 +9,12 @@ import {
   Stack,
   Text,
 } from "@mantine/core";
-import { IconMailbox, IconPlus, IconSend } from "@tabler/icons-react";
+import {
+  IconMailbox,
+  IconPlus,
+  IconSend,
+  IconCornerUpLeft,
+} from "@tabler/icons-react";
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { NewMessageModal } from "../components/NewMessageModal";
@@ -20,7 +25,8 @@ const MailMessageComponent: React.FC<{
   message: ThreadMessage;
   currentAgent?: string;
   agents: any[];
-}> = ({ message, currentAgent, agents }) => {
+  onReply?: (recipient: string, subject: string, body: string) => void;
+}> = ({ message, currentAgent, agents, onReply }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const isFromCurrentAgent = currentAgent && message.username === currentAgent;
   const membersExcludingSender = message.members.filter(
@@ -91,6 +97,28 @@ const MailMessageComponent: React.FC<{
                   );
                 })}
               </Group>
+              {!isFromCurrentAgent && onReply && (
+                <ActionIcon
+                  variant="subtle"
+                  color="blue"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const quotedBody = message.message
+                      .split("\n")
+                      .map((line) => `> ${line}`)
+                      .join("\n");
+                    onReply(
+                      message.username,
+                      `RE: ${message.subject}`,
+                      `\n\n${quotedBody}`,
+                    );
+                  }}
+                  title="Reply"
+                >
+                  <IconCornerUpLeft size={14} />
+                </ActionIcon>
+              )}
             </Group>
           </Flex>
           <Text size="xs" c="dimmed" style={{ flexShrink: 0 }}>
@@ -144,6 +172,11 @@ export const Mail: React.FC = () => {
     type: "success" | "error";
     message: string;
   } | null>(null);
+  const [replyData, setReplyData] = useState<{
+    recipient: string;
+    subject: string;
+    body: string;
+  } | null>(null);
   // Get filtered mail for the current agent
   const allMail = getMailForAgent(agentParam);
 
@@ -192,6 +225,12 @@ export const Mail: React.FC = () => {
   const receivedCount = allMail.filter((mail) => {
     return mail.username !== agentParam;
   }).length;
+
+  // Handle reply to a message
+  const handleReply = (recipient: string, subject: string, body: string) => {
+    setReplyData({ recipient, subject, body });
+    setNewMessageModalOpened(true);
+  };
 
   // Handle sending a new message
   const handleSendMessage = async (
@@ -352,6 +391,7 @@ export const Mail: React.FC = () => {
             message={message}
             currentAgent={agentParam}
             agents={agents}
+            onReply={handleReply}
           />
         ))}
         {filteredMail.length === 0 && !mailLoading && (
@@ -363,10 +403,16 @@ export const Mail: React.FC = () => {
 
       <NewMessageModal
         opened={newMessageModalOpened}
-        onClose={() => setNewMessageModalOpened(false)}
+        onClose={() => {
+          setNewMessageModalOpened(false);
+          setReplyData(null);
+        }}
         agents={agents}
         currentAgentName={agentParam}
         onSend={handleSendMessage}
+        initialRecipient={replyData?.recipient}
+        initialSubject={replyData?.subject}
+        initialBody={replyData?.body}
       />
     </Stack>
   );
