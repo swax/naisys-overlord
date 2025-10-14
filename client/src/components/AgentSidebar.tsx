@@ -56,44 +56,54 @@ export const AgentSidebar: React.FC = () => {
     );
   }
 
-  const organizeAgentsHierarchically = (agents: Agent[]): Agent[] => {
-    const leadAgents: Agent[] = [];
-    const subAgents: Agent[] = [];
-    const orphanedSubAgents: Agent[] = [];
+  type AgentWithDepth = Agent & { depth: number };
+
+  const organizeAgentsHierarchically = (agents: Agent[]): AgentWithDepth[] => {
+    const agentsByName = new Map(agents.map((agent) => [agent.name, agent]));
+    const childrenMap = new Map<string, Agent[]>();
+    const rootAgents: Agent[] = [];
 
     agents.forEach((agent) => {
-      if (agent.leadUsername) {
-        subAgents.push(agent);
+      const leadName = agent.leadUsername;
+      if (leadName && agentsByName.has(leadName)) {
+        const children = childrenMap.get(leadName) ?? [];
+        children.push(agent);
+        childrenMap.set(leadName, children);
       } else {
-        leadAgents.push(agent);
+        rootAgents.push(agent);
       }
     });
 
-    leadAgents.sort((a, b) => a.name.localeCompare(b.name));
+    const sortByName = (a: Agent, b: Agent) => a.name.localeCompare(b.name);
 
-    const organizedAgents: Agent[] = [];
+    rootAgents.sort(sortByName);
+    childrenMap.forEach((childList) => childList.sort(sortByName));
 
-    subAgents.forEach((subAgent) => {
-      const leadExists = leadAgents.some(
-        (lead) => lead.name === subAgent.leadUsername,
-      );
-      if (!leadExists) {
-        orphanedSubAgents.push(subAgent);
+    const organizedAgents: AgentWithDepth[] = [];
+    const visiting = new Set<string>();
+    const visited = new Set<string>();
+
+    const traverse = (agent: Agent, depth: number) => {
+      if (visiting.has(agent.name) || visited.has(agent.name)) {
+        return;
       }
-    });
 
-    orphanedSubAgents.sort((a, b) => a.name.localeCompare(b.name));
-    organizedAgents.push(...orphanedSubAgents);
+      visiting.add(agent.name);
+      organizedAgents.push({ ...agent, depth });
+      visited.add(agent.name);
 
-    leadAgents.forEach((leadAgent) => {
-      organizedAgents.push(leadAgent);
+      const children = childrenMap.get(agent.name) ?? [];
+      children.forEach((child) => traverse(child, depth + 1));
 
-      const relatedSubAgents = subAgents
-        .filter((sub) => sub.leadUsername === leadAgent.name)
-        .sort((a, b) => a.name.localeCompare(b.name));
+      visiting.delete(agent.name);
+    };
 
-      organizedAgents.push(...relatedSubAgents);
-    });
+    rootAgents.forEach((agent) => traverse(agent, 0));
+
+    agents
+      .filter((agent) => !visited.has(agent.name))
+      .sort(sortByName)
+      .forEach((agent) => traverse(agent, 0));
 
     return organizedAgents;
   };
@@ -156,13 +166,15 @@ export const AgentSidebar: React.FC = () => {
     );
   };
 
+  const orderedAgents = organizeAgentsHierarchically(agents);
+
   return (
     <>
       <Text size="sm" fw={600} mb="md" c="dimmed">
         AGENTS
       </Text>
       <Stack gap="xs">
-        {organizeAgentsHierarchically(agents).map((agent, index) => (
+        {orderedAgents.map((agent, index) => (
           <Card
             key={index}
             padding="sm"
@@ -174,7 +186,7 @@ export const AgentSidebar: React.FC = () => {
                 ? "var(--mantine-color-blue-9)"
                 : undefined,
               opacity: agent.name === "All" ? 1 : agent.online ? 1 : 0.5,
-              marginLeft: agent.leadUsername ? "1rem" : undefined,
+              marginLeft: agent.depth ? `${agent.depth * 1.5}rem` : undefined,
             }}
             onClick={() => handleAgentClick(agent)}
           >
