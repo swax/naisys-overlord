@@ -1,3 +1,7 @@
+# THIS PROJECT HAS BEEN DEPRECATED
+
+NAISYS Overlord has been moved into the NAISYS monorepo. Please visit the [NAISYS repository](https://github.com/swax/NAISYS) for the latest updates.
+
 # NAISYS Overlord
 
 A management application for NAISYS agents that provides a monitoring interface and communication capabilities. NAISYS Overlord sits above the NAISYS database to provide visibility into how agents are working and enables communication with the agents.
